@@ -1,0 +1,98 @@
+===== System Information =====
+Current Date : Sat Sep  5 14:38:40 UTC 2026
+Hostname     : Sachith-PC
+Username     : sachith
+
+===== Disk Usage =====
+Filesystem                                Size  Used Avail Use% Mounted on
+none                                      3.8G     0  3.8G   0% /usr/lib/modules/6.6.87.2-microsoft-standard-WSL2
+none                                      3.8G  4.0K  3.8G   1% /mnt/wsl
+drivers                                   352G  234G  119G  67% /usr/lib/wsl/drivers
+/dev/sdd                                 1007G   18G  938G   2% /
+none                                      3.8G  548K  3.8G   1% /mnt/wslg
+none                                      3.8G     0  3.8G   0% /usr/lib/wsl/lib
+rootfs                                    3.8G  2.7M  3.8G   1% /init
+none                                      3.8G  592K  3.8G   1% /run
+none                                      3.8G     0  3.8G   0% /run/lock
+none                                      3.8G     0  3.8G   0% /run/shm
+none                                      3.8G   76K  3.8G   1% /mnt/wslg/versions.txt
+none                                      3.8G   76K  3.8G   1% /mnt/wslg/doc
+C:\                                       352G  234G  119G  67% /mnt/c
+D:\                                       600G   43G  558G   8% /mnt/d
+tmpfs                                     775M   20K  775M   1% /run/user/1000
+none                                      3.8G  656K  3.8G   1% /mnt/wsl/docker-desktop/shared-sockets/host-services
+/dev/sde                                  130M   66M   54M  56% /mnt/wsl/docker-desktop/docker-desktop-user-distro
+/dev/loop0                                763M  763M     0 100% /mnt/wsl/docker-desktop/cli-tools
+tmpfs                                     775M   20K  775M   1% /run/user/0
+C:\Program Files\Docker\Docker\resources  352G  234G  119G  67% /Docker/host
+Directory 'output-data' created.
+File 'output-data/processes.txt' created.
+
+===== Running Processes =====
+your 131072x1 screen size is bogus. expect trouble
+    PID    PPID USER     %CPU %MEM STAT  STARTED     TIME COMMAND
+      1       0 root      0.0  0.1 Ss   21:00:15 00:00:10 systemd
+      2       1 root      0.0  0.0 Sl   21:00:15 00:00:00 init-systemd(Ub
+      7       2 root      0.0  0.0 Sl   21:00:16 00:00:00 init
+     43       1 root      0.0  0.2 S<s  21:00:16 00:00:27 systemd-journal
+     89       1 root      0.0  0.0 Ss   21:00:17 00:00:17 systemd-udevd
+    177       1 systemd+  0.0  0.1 Ss   21:00:17 00:00:02 systemd-resolve
+    178       1 systemd+  0.0  0.0 Ssl  21:00:17 00:00:05 systemd-timesyn
+    184       1 root      0.0  0.0 Ss   21:00:18 00:00:00 cron
+    186       1 message+  0.0  0.0 Ss   21:00:18 00:00:02 dbus-daemon
+    201       1 root      0.0  0.1 Ss   21:00:18 00:00:02 systemd-logind
+    211       1 root      0.0  0.0 Ss   21:00:18 00:00:00 agetty
+    214       1 syslog    0.0  0.0 Ssl  21:00:18 00:00:01 rsyslogd
+    226       1 root      0.0  0.0 Ss+  21:00:18 00:00:00 agetty
+    234       1 root      0.0  0.2 Ssl  21:00:18 00:00:00 unattended-upgr
+    301       2 root      0.0  0.0 Ss   14:30:32 00:00:00 SessionLeader
+    304     301 root      0.0  0.0 S    14:30:32 00:00:00 Relay(306)
+    306     304 sachith   0.0  0.0 Ss+  14:30:32 00:00:00 sh
+    323       2 root      0.0  0.0 Ss   21:00:18 00:00:00 login
+    325       2 root      0.0  0.0 Ss   14:30:34 00:00:00 login
+    377       1 root      0.0  0.1 Ss   14:30:35 00:00:00 systemd
+    379     377 root      0.0  0.0 S    14:30:35 00:00:00 (sd-pam)
+    382       1 sachith   0.0  0.1 Ss   21:00:19 00:00:01 systemd
+    384     382 sachith   0.0  0.0 S    21:00:19 00:00:00 (sd-pam)
+    408     323 sachith   0.0  0.0 S+   21:00:19 00:00:00 bash
+    413     325 root      0.0  0.0 S+   14:30:35 00:00:00 bash
+    569     301 root      0.0  0.0 S    14:30:40 00:00:00 Relay(570)
+    570     569 root      0.0  0.2 Ssl+ 14:30:40 00:00:00 docker-desktop-
+    794       2 root      0.0  0.0 Ss   14:31:49 00:00:00 SessionLeader
+    795     794 root      0.0  0.0 S    14:31:49 00:00:00 Relay(796)
+    796     795 sachith   0.0  0.0 Ss+  14:31:49 00:00:00 bash
+   1610       1 polkitd   0.0  0.0 Ssl  21:02:42 00:00:03 polkitd
+   1848       1 root      0.1  0.1 Ssl  14:36:56 00:00:00 wsl-pro-service
+   2172       2 root      0.0  0.0 Ss   14:38:40 00:00:00 SessionLeader
+   2173      89 root      0.0  0.0 S    14:38:40 00:00:00 (udev-worker)
+   2174    2172 root      0.0  0.0 S    14:38:40 00:00:00 Relay(2177)
+   2175      89 root      0.0  0.0 S    14:38:40 00:00:00 (udev-worker)
+   2176      89 root      0.0  0.0 S    14:38:40 00:00:00 (udev-worker)
+   2177    2174 sachith   9.0  0.0 Ss+  14:38:40 00:00:00 bash
+   2180    2177 sachith  16.6  0.0 S+   14:38:40 00:00:00 system_info.sh
+   2187    2180 sachith   0.0  0.0 R+   14:38:40 00:00:00 ps
+  28673       1 root      0.0  0.0 S    23:19:38 00:00:00 Relay(28676)
+  28685   28673 sachith   0.3  0.2 Ssl  23:19:38 00:03:25 redis-server
+  81728       1 root      0.0  0.0 S    03:30:02 00:00:00 Relay(81730)
+  81971       1 root      0.0  0.0 S    03:31:11 00:00:00 Relay(81972)
+  95461       2 root      0.0  0.0 Ss   04:43:33 00:00:00 SessionLeader
+  95462   95461 root      0.0  0.0 S    04:43:33 00:00:00 Relay(95463)
+  95463   95462 sachith   0.0  0.0 Ss+  04:43:33 00:00:00 sh
+  95464   95463 sachith   0.0  0.0 S+   04:43:33 00:00:00 sh
+  95470   95464 sachith   0.0  0.0 S+   04:43:33 00:00:00 sh
+  95474   95470 sachith   0.2  1.5 Sl+  04:43:33 00:01:39 MainThread
+  95522   95474 sachith   0.0  0.7 Sl+  04:43:34 00:00:22 MainThread
+  95534   95474 sachith   0.1  1.8 Sl+  04:43:34 00:00:53 MainThread
+  95547   95474 sachith   2.8  6.0 Sl+  04:43:35 00:16:41 MainThread
+  95569   95534 sachith   0.0  3.1 Sl+  04:43:36 00:00:07 MainThread
+  95817   95547 sachith   2.8  4.0 Sl+  04:43:45 00:17:10 claude
+ 183069       2 root      0.0  0.0 Ss   14:12:28 00:00:00 SessionLeader
+ 183070  183069 root      0.0  0.0 S    14:12:28 00:00:00 Relay(183071)
+ 183071  183070 sachith   0.0  0.6 Ssl+ 14:12:28 00:00:00 MainThread
+ 183078       2 root      0.0  0.0 Ss   14:12:28 00:00:00 SessionLeader
+ 183079  183078 root      0.0  0.0 S    14:12:28 00:00:00 Relay(183080)
+ 183080  183079 sachith   0.0  0.6 Ssl+ 14:12:28 00:00:00 MainThread
+ 183550   95547 sachith   0.0  0.8 Sl+  14:15:11 00:00:00 MainThread
+your 131072x1 screen size is bogus. expect trouble
+
+Running processes information has been saved to: output-data/processes.txt
