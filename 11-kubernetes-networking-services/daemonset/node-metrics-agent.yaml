@@ -1,0 +1,42 @@
+# ==============================================================================
+# DaemonSet - one agent Pod on EVERY eligible node.
+#
+# Used in Lecture 11 Task 10 (Deployment vs StatefulSet vs DaemonSet) alongside
+# the ClusterIP Deployment and the Headless StatefulSet.
+# There is deliberately no `replicas` field: a DaemonSet's replica count is
+# derived from the number of eligible nodes by the DaemonSet controller.
+# ==============================================================================
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-metrics-agent
+  labels:
+    app: node-metrics-agent
+spec:
+  selector:
+    matchLabels:
+      app: node-metrics-agent
+  template:
+    metadata:
+      labels:
+        app: node-metrics-agent
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: agent
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] node=$(hostname) collecting host metrics";
+                sleep 15;
+              done
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"

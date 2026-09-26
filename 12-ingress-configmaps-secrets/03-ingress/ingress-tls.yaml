@@ -1,0 +1,64 @@
+# ==============================================================================
+# Multi-tenant Ingress: combines HOST-based routing with PATH-based routing
+# inside a single resource, plus TLS termination on port 443.
+#
+# Hosts:
+#   portal.campus.local  /            -> yatri-frontend-service  (nginx)
+#   portal.campus.local  /api(/|$)(.*) -> yatri-backend-service   (python)
+#   api.campus.local     /            -> yatri-backend-service   (python)
+#
+# TLS: the Secret referenced in spec.tls must be of type kubernetes.io/tls and
+# must be created first:
+#   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+#     -keyout tls.key -out tls.crt -subj "/CN=campus.local/O=CampusDevOps"
+#   kubectl create secret tls campus-tls-cert --cert=tls.crt --key=tls.key
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: campus-ingress-tls
+  labels:
+    app: campus-portal
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  tls:
+    # Terminate TLS for BOTH virtual hosts with the same self-signed cert
+    - hosts:
+        - portal.campus.local
+        - api.campus.local
+      secretName: campus-tls-cert
+  rules:
+    # ---------------- Host 1: portal (with a nested path rule) -------------
+    - host: portal.campus.local
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: yatri-backend-service
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: yatri-frontend-service
+                port:
+                  number: 80
+
+    # ---------------- Host 2: api (root goes to the backend) --------------
+    - host: api.campus.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: yatri-backend-service
+                port:
+                  number: 80

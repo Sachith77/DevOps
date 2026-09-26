@@ -1,0 +1,48 @@
+# ==============================================================================
+# Services WITHOUT a label selector + a hand-written Endpoints object.
+#
+# Why this exists: a normal Service discovers its backends by matching labels
+# against Pods. That only works for Pods running inside the cluster. When the
+# backend is legacy infrastructure outside Kubernetes (a VM, a bare-metal box,
+# a database in another VPC), there is nothing to label - so you omit the
+# selector and publish the addresses yourself.
+#
+# NOTE: with no selector, Kubernetes will NOT garbage-collect these Endpoints,
+# and nothing keeps them in sync with reality. You own that lifecycle.
+# ==============================================================================
+
+---
+# 1. A ClusterIP Service with NO selector.
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-legacy-db
+  labels:
+    app: external-legacy-db
+spec:
+  type: ClusterIP
+  # NO selector: this Service is not tied to any Pod.
+  ports:
+    - name: db
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+
+---
+# 2. The Endpoints object that gives the Service something to route to.
+#    In newer clusters EndpointSlice (discovery.k8s.io/v1) is preferred, but the
+#    legacy v1 Endpoints object is still fully supported and is what
+#    `kubectl get endpoints` displays.
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: external-legacy-db
+  labels:
+    app: external-legacy-db
+subsets:
+  - addresses:
+      - ip: 192.168.1.150
+    ports:
+      - name: db
+        protocol: TCP
+        port: 3306

@@ -1,1 +1,7 @@
 .claude/
+
+# Never commit private keys. Lecture 12 Task 5 explains exactly why:
+# anything in git history is readable forever by anyone with repo access.
+# Regenerate instead:  python gen_cert.py  (or: openssl req -x509 ...)
+*.key
+*.pem

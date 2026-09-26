@@ -48,7 +48,7 @@ echo -n "c2VjcmV0cGFzc3dvcmQ=" | base64 --decode
 
 ## Code
 
-### secret/db-secret.yaml
+### 02-secret/db-secret.yaml
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -80,7 +80,7 @@ echo -n "yatri_production_db" | base64
 
 ### Apply and Inspect
 ```bash
-kubectl apply -f secret/db-secret.yaml
+kubectl apply -f 02-secret/db-secret.yaml
 kubectl get secret yatri-db-secret
 ```
 

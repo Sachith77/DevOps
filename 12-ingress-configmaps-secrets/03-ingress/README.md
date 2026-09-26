@@ -72,7 +72,7 @@ Public Internet
 
 ## Code
 
-### ingress/ingress-routes.yaml
+### 03-ingress/ingress-routes.yaml
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -107,7 +107,7 @@ spec:
 
 ### Apply and Inspect
 ```bash
-kubectl apply -f ingress/ingress-routes.yaml
+kubectl apply -f 03-ingress/ingress-routes.yaml
 kubectl get ingress yatri-ingress
 kubectl describe ingress yatri-ingress
 ```

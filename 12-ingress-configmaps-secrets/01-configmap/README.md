@@ -50,7 +50,7 @@ Image: v3 (PORT=8080)            ConfigMap: LOG=INFO, PORT=5000
 
 ## Code
 
-### configmap/app-config.yaml
+### 01-configmap/app-config.yaml
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -68,7 +68,7 @@ data:
 
 ### Apply and Inspect
 ```bash
-kubectl apply -f configmap/app-config.yaml
+kubectl apply -f 01-configmap/app-config.yaml
 kubectl get configmap yatri-app-config
 kubectl describe configmap yatri-app-config
 ```

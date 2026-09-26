@@ -1,0 +1,27 @@
+# ==============================================================================
+# CORRECTED VERSION OF selector-mismatch.yaml
+# Drill 2 fix: spec.template.metadata.labels.app now matches
+# spec.selector.matchLabels.app, so the API server accepts the Deployment.
+# The selector of a Deployment is IMMUTABLE after creation, so this must be
+# fixed in the manifest BEFORE the resource is first created.
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selector-error-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: correct-app-name
+  template:
+    metadata:
+      labels:
+        # FIXED: this label now matches spec.selector.matchLabels.app above
+        app: correct-app-name
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
