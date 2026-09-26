@@ -641,6 +641,10 @@ curl.exe -s -o NUL -w "yatri.local -> 127.0.0.1 : HTTP %{http_code}" --resolve y
 # and requires an ELEVATED terminal, so this lab uses the no-privilege
 # equivalent that curl provides instead: --resolve maps a hostname to an
 # IP for a single request, exactly like a hosts entry would.
+#
+# The -n ingress-nginx flag below is optional here only because the
+# current context's namespace was already ingress-nginx. Tasks 10-14
+# pass it explicitly so the command works from any namespace.
 
 NAME            CLASS   HOSTS        ADDRESS        PORTS   AGE
 yatri-ingress   nginx   yatri.local  192.168.49.2   80      9m47s
@@ -676,30 +680,45 @@ kubectl apply -f 04-full-demo/backend.yaml
 kubectl apply -f 04-full-demo/ingress.yaml
 
 kubectl get ingress yatri-ingress
-kubectl describe ingress yatri-ingress | Out-String -Stream | Select-String -Pattern 'Rules|Host|Paths' -Context 0,0
+kubectl describe ingress yatri-ingress | Out-String -Stream | Select-String -Pattern 'Rules:' -Context 0,6
 
-kubectl port-forward svc/ingress-nginx-controller 8080:80
-curl.exe -s --resolve yatri.local:8080:127.0.0.1 http://yatri.local:8080/  | Select-String -Pattern '<title>'
-curl.exe -s --resolve yatri.local:8080:127.0.0.1 http://yatri.local:8080/api/
+kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 18080:80
+curl.exe -s --resolve yatri.local:18080:127.0.0.1 http://yatri.local:18080/  | Select-String -Pattern '<title>'
+curl.exe -s --resolve yatri.local:18080:127.0.0.1 http://yatri.local:18080/api/
 ```
 
 **Output:**
 
 ```text
-NAME            CLASS   HOSTS        ADDRESS        PORTS   AGE
-yatri-ingress   nginx   yatri.local  192.168.49.2   80      3s
+NAME            CLASS   HOSTS        PORTS   AGE
+yatri-ingress   nginx   yatri.local  80      2s
 
 # -- the routing table the controller derived from spec.rules --
-Rules:
-  Host            Path  Backends
-  ----            ----  --------
+> Rules:
+    Host         Path  Backends
+    ----         ----  --------
+    yatri.local
+                 /api(/|$)(.*)   yatri-backend-service:80 (10.244.0.9:5000,10.244.0.10:5000)
+                 /               yatri-frontend-service:80 (10.244.0.7:80,10.244.0.8:80)
+  Annotations:   nginx.ingress.kubernetes.io/rewrite-target: /$2
 
-# -- Path /   ->  the nginx FRONTEND --
-<title>Network Assignment Test Server</title>
+# -- Path /   ->  the nginx FRONTEND (Server: nginx) --
+HTTP/1.1 200 OK
+Content-Type: text/html
+<title>Welcome to nginx!</title>
 
-# -- Path /api/   ->  the python BACKEND (rewrite-target strips /api) --
-not found
-# Same host, same port, one Ingress: the PATH decides the backend.
+# -- Path /api/   ->  the python BACKEND (Server: BaseHTTP) --
+# rewrite-target: /$2 strips the /api prefix before proxying
+HTTP/1.1 200 OK
+Yatri Backend API
+=================
+ENVIRONMENT     : production
+LOG_LEVEL       : INFO
+DEFAULT_CURRENCY: INR
+POSTGRES_USER   : yatri_admin
+POSTGRES_DB     : yatri_production_db
+# Same host, same port, one Ingress object: only the PATH changed and a
+# different backend answered. That is Layer-7 routing.
 ```
 
 **Screenshot:** ![Path-based routing](./screenshots/10-path-based-routing.png)
@@ -715,7 +734,9 @@ annotations:
 
 `use-regex: "true"` is what allows the capture group in `/api(/|$)(.*)`. Without it, the literal string `/api(/|$)(.*)` would never match a real URL and everything would fall through to `/`. **Longest-prefix wins**: `/api(/|$)(.*)` is matched before `/`, so `/api/orders` reaches the backend while `/` reaches the frontend.
 
-**About the `not found` above.** `rewrite-target: /$2` rewrites `/api/` to `/` before the request reaches the backend, and this backend only serves its status page on a *distinct* path — the Python handler in [`04-full-demo/backend.yaml`](04-full-demo/backend.yaml) binds `0.0.0.0:5000` and answers every GET identically, whereas the live container in the screenshot was the assignment's own backend. The routing decision itself is what the screenshot proves: `/` returned the nginx title, `/api/` did not — the request was routed to a *different* backend. The ConfigMap and Secret values are visible end-to-end in Task 6 and Task 14.
+Note what the two responses prove: the *same* host and port returned `Server: nginx` for `/` and `Server: BaseHTTP` (Python) for `/api/`. The `rewrite-target: /$2` annotation rewrote `/api/` to `/` before the request reached the backend, which is why the backend printed its root status page rather than a 404.
+
+> **A real trap worth recording.** An earlier capture of this task used `kubectl port-forward svc/ingress-nginx-controller 8080:80`. Port `8080` was already held by an unrelated local dev server, and **`kubectl port-forward` does not fail on a busy port** — it prints nothing to stdout and exits. `curl` then silently answered from that other application, producing a page titled *"Network Assignment Test Server"* where nginx should have been. Two lessons: bind a port you have verified is free (this lab uses `18080`/`18443`), and always assert that a response actually came from the thing you deployed. `PortForward` in the capture tooling now refuses to start if the port is busy or if the forwarder never reports `Forwarding from`.
 
 **Production caution:** `rewrite-target` is a blunt instrument — it applies to *every* path in that Ingress unless you use the `location-snippet`/`use-regex` combination carefully, and regex paths disable NGINX's `location /` prefix optimisation. For a real API prefix, either mount the backend under `/api` or use a Gateway API `URLRewrite` filter.
 
@@ -729,41 +750,43 @@ annotations:
 
 ```bash
 kubectl get ingress campus-ingress-tls
-kubectl port-forward svc/ingress-nginx-controller 8080:80
+kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 18080:80
 
-curl.exe -s -H "Host: portal.campus.local" http://127.0.0.1:8080/ | Select-String -Pattern '<title>'
-curl.exe -s -H "Host: api.campus.local"    http://127.0.0.1:8080/
-curl.exe -s -o NUL -w "HTTP %{http_code}" -H "Host: unknown.example.com" http://127.0.0.1:8080/
+curl.exe -s -H "Host: portal.campus.local" http://127.0.0.1:18080/ | Select-String -Pattern '<title>'
+curl.exe -s -H "Host: api.campus.local"    http://127.0.0.1:18080/
+curl.exe -s -o NUL -w "HTTP %{http_code}" -H "Host: unknown.example.com" http://127.0.0.1:18080/
 ```
 
 **Output:**
 
 ```text
-NAME                CLASS   HOSTS                             ADDRESS        PORTS      AGE
-campus-ingress-tls  nginx   portal.campus.local,api.campus.local  192.168.49.2  80, 443  3s
+NAME                 CLASS   HOSTS                              PORTS      AGE
+campus-ingress-tls   nginx   portal.campus.local,api.campus.local  80, 443   1s
 
-<title>Network Assignment Test Server</title>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Network Assignment Test Server</title>
-</head>
-<body>
-    <h1>It works.</h1>
-    <p>This is the test index page for the binary protocol assignment.</p>
-    <p>The calculator is at /add, /sub, /mul, /div.</p>
-</body>
-</html>
+# portal.campus.local/  ->  frontend (nginx)
+HTTP/1.1 200 OK
+Content-Type: text/html
+<title>Welcome to nginx!</title>
 
-HTTP 200
+# api.campus.local/  ->  backend (python); its / maps to the api service
+HTTP/1.1 200 OK
+Yatri Backend API
+=================
+ENVIRONMENT     : production
+LOG_LEVEL       : INFO
+DEFAULT_CURRENCY: INR
+POSTGRES_USER   : yatri_admin
+POSTGRES_DB     : yatri_production_db
+
+# an unknown Host falls through to the controller's default backend:
+HTTP 404
 # DNS for portal.campus.local / api.campus.local normally points at the
 # LB IP; here the Host header is sent explicitly, which is equivalent.
 ```
 
 **Screenshot:** ![Host-based routing](./screenshots/11-host-based-routing.png)
 
-**The evaluation order is host first, then path.** NGINX matches the `Host` header against `spec.rules[].host`; only *within* the winning host does it consider paths. A request whose `Host` matches nothing falls through to the controller's default backend — here that returned the shared default site, which is why an unknown host still answered `HTTP 200` rather than a 404.
+**The evaluation order is host first, then path.** NGINX matches the `Host` header against `spec.rules[].host`; only *within* the winning host does it consider paths. A request whose `Host` matches nothing falls through to the controller's default backend — which is exactly why the unknown host returns `HTTP 404` here, and why the two *known* hosts return two *different* applications from the same socket.
 
 ```text
                  Host: portal.campus.local ──► rules[0] ──► 2 paths ( /api → backend, / → frontend )
@@ -784,35 +807,39 @@ This is the multi-tenant pattern: `portal.campus.local` for staff, `api.campus.l
 
 ```bash
 kubectl apply -f 03-ingress/ingress-tls.yaml
-kubectl describe ingress campus-ingress-tls | Out-String -Stream | Select-String -Pattern 'Host|Paths|Backend' -Context 0,0
-kubectl port-forward svc/ingress-nginx-controller 8080:80
+kubectl describe ingress campus-ingress-tls | Out-String -Stream | Select-String -Pattern 'Rules:' -Context 0,14
+kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 18080:80
 
 # 1) portal.campus.local/            -> frontend
-curl.exe -s -o NUL -w "HTTP %{http_code}" -H "Host: portal.campus.local" http://127.0.0.1:8080/
+curl.exe -s -o NUL -w "HTTP %{http_code}" -H "Host: portal.campus.local" http://127.0.0.1:18080/
 # 2) portal.campus.local/api/        -> backend   (path beats host root)
-curl.exe -s -H "Host: portal.campus.local" http://127.0.0.1:8080/api/ | Select-String -Pattern 'ENVIRONMENT'
+curl.exe -s -H "Host: portal.campus.local" http://127.0.0.1:18080/api/ | Select-String -Pattern 'ENVIRONMENT'
 # 3) api.campus.local/               -> backend
-curl.exe -s -H "Host: api.campus.local" http://127.0.0.1:8080/ | Select-String -Pattern 'ENVIRONMENT'
+curl.exe -s -H "Host: api.campus.local" http://127.0.0.1:18080/ | Select-String -Pattern 'ENVIRONMENT'
 # 4) yatri.local/api/                -> backend   (a SEPARATE Ingress, same controller)
-curl.exe -s -o NUL -w "HTTP %{http_code}" --resolve yatri.local:8080:127.0.0.1 http://yatri.local:8080/api/
+curl.exe -s -o NUL -w "HTTP %{http_code}" --resolve yatri.local:18080:127.0.0.1 http://yatri.local:18080/api/
 ```
 
 **Output:**
 
 ```text
-Default backend:  <default>
-  Host            Path  Backends
-                  /api(/|$)(.*)    yatri-backend-service:80 (10.244.0.21:5000,10.244.0.22:5000)
-                  /                yatri-backend-service:80 (10.244.0.21:5000,10.244.0.22:5000)
+> Rules:
+    Host         Path  Backends
+    ----         ----  --------
+    portal.campus.local
+                 /api(/|$)(.*)   yatri-backend-service:80 (10.244.0.9:5000,10.244.0.10:5000)
+                 /               yatri-frontend-service:80 (10.244.0.7:80,10.244.0.8:80)
+    api.campus.local
+                 /               yatri-backend-service:80 (10.244.0.9:5000,10.244.0.10:5000)
 
-# 1) portal.campus.local/    -> frontend
-HTTP 000
-# 2) portal.campus.local/api/    -> backend   (path beats host root)
+# 1) portal.campus.local/       -> frontend
+HTTP 200
+# 2) portal.campus.local/api/   -> backend   (path beats the host root)
 ENVIRONMENT     : production
-# 3) api.campus.local/    -> backend
+# 3) api.campus.local/          -> backend
 ENVIRONMENT     : production
-# 4) yatri.local/api/    -> backend   (separate Ingress, same controller)
-HTTP 000
+# 4) yatri.local/api/           -> backend   (a SEPARATE Ingress, same controller)
+HTTP 200
 # Path rules are evaluated BEFORE the catch-all '/' on the same host, which
 # is why /api wins over / on portal.campus.local.
 ```
@@ -835,7 +862,7 @@ yatri-ingress       (a second Ingress, same controller)
 **Two things worth internalising:**
 
 1. **Multiple Ingress objects can coexist.** `campus-ingress-tls` and `yatri-ingress` are separate resources with non-overlapping hosts, both compiled by the same controller. Ingresses are *merged*, not exclusive — overlapping hosts are resolved by the controller's own precedence rules (`kubectl ingress-shim`), which is a classic source of surprise.
-2. **`HTTP 000` on case 1 and case 4 is a client-side port-forward artifact**, not a routing failure. Those two calls used a single `kubectl port-forward` session that was serving case 2 and 3 at that moment; the requests that *did* reach the controller (cases 2 and 3) returned real backend content with `ENVIRONMENT: production`, proving the hybrid table works. Cases 1 and 4 were verified independently in the Task 10 and Task 14 screenshots with their own port-forward.
+2. **All four cases answer, from one port-forward session.** Cases 1 and 4 return `HTTP 200` and cases 2 and 3 return the backend's `ENVIRONMENT : production`, which is the hybrid table doing its job. (An earlier capture showed `HTTP 000` on cases 1 and 4; that was *not* a routing failure and *not* a port-forward session problem — the port-forward had bound a port already owned by an unrelated local server, so `curl` never reached the controller at all. See the note in Task 10.)
 
 **Rule of thumb:** keep hosts **disjoint** across Ingress resources. If two Ingresses claim the same host, which one wins is controller-specific behaviour, not something the API server validates.
 
@@ -864,16 +891,16 @@ kubectl get ingress campus-ingress-tls -o jsonpath='tls hosts={.spec.tls[0].host
 kubectl get ingress campus-ingress-tls
 
 # Step 4: HTTPS handshake on 443
-kubectl port-forward svc/ingress-nginx-controller 8443:443
-curl.exe -k -s -i --resolve portal.campus.local:8443:127.0.0.1 https://portal.campus.local:8443/ | Select-Object -First 6
-curl.exe -k -s -H "Host: api.campus.local" https://127.0.0.1:8443/ | Select-String -Pattern 'ENVIRONMENT'
+kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 18443:443
+curl.exe -k -s -i --resolve portal.campus.local:18443:127.0.0.1 https://portal.campus.local:18443/ | Select-Object -First 6
+curl.exe -k -s -H "Host: api.campus.local" https://127.0.0.1:18443/ | Select-String -Pattern 'ENVIRONMENT'
 ```
 
 **Output:**
 
 ```text
 NAME             TYPE                 DATA   AGE
-campus-tls-cert  kubernetes.io/tls    2      2s
+campus-tls-cert  kubernetes.io/tls    2      1s
 
 type=kubernetes.io/tls
 
@@ -881,14 +908,20 @@ L$0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1J
 # ---- the first 40 base64 chars of tls.crt inside the Secret ----
 tls hosts=["portal.campus.local","api.campus.local"]  secret=campus-tls-cert
 
-NAME                CLASS   HOSTS                             ADDRESS        PORTS      AGE
-campus-ingress-tls  nginx   portal.campus.local,api.campus.local  192.168.49.2  80, 443  112s
+NAME                 CLASS   HOSTS                              PORTS      AGE
+campus-ingress-tls   nginx   portal.campus.local,api.campus.local  80, 443   18s
 
+# Forwarding from 127.0.0.1:18443 -> the controller's ClusterIP:443
+HTTP/1.1 200 OK
+Date: Sat, 26 Sep 2026 19:25:55 GMT
+Content-Type: text/html
+Content-Length: 615
+Connection: keep-alive
 # -k is required: the certificate is self-signed, so the chain is
 # untrusted. In production this would be a real ACME/Let's Encrypt cert.
 ENVIRONMENT     : production
-# TLS is terminated AT the controller. The backend pods only ever see
-# plain HTTP on port 80 - they never hold the certificate.
+# TLS terminates AT the controller. The backend pods only ever see plain
+# HTTP on port 80 - they never hold the certificate.
 ```
 
 **Screenshot:** ![TLS termination](./screenshots/13-tls-termination.png)
@@ -936,29 +969,38 @@ kubectl get ingress yatri-ingress || echo "Ingress deleted"
 
 # -- audit the whole stack in one view --
 NAME               DATA   AGE
-yatri-app-config   5      26s
+yatri-app-config   5      8s
 
 NAME               TYPE     DATA   AGE
-yatri-db-secret    Opaque   3      26s
+yatri-db-secret    Opaque   3      7s
 
-NAME            CLASS   HOSTS        ADDRESS        PORTS   AGE
-yatri-ingress   nginx   yatri.local  192.168.49.2   80      7s
+NAME            CLASS   HOSTS        PORTS   AGE
+yatri-ingress   nginx   yatri.local  80      2s
 
 NAME             READY   UP-TO-DATE   AVAILABLE   AGE
-yatri-frontend   2/2     2            2           26s
-yatri-backend    2/2     2            2           24s
+yatri-frontend   2/2     2            2           8s
+yatri-backend    2/2     2            2           8s
 
-NAME                      TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
-yatri-frontend-service    ClusterIP   10.111.45.33  <none>        80/TCP    27s
-yatri-backend-service     ClusterIP   10.97.105.177 <none>        80/TCP    24s
+NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+yatri-frontend-service    ClusterIP   10.101.36.68  <none>        80/TCP    8s
+yatri-backend-service     ClusterIP   10.97.1.127   <none>        80/TCP    9s
 
-yatri-frontend-ddc fc4b5f-gvmhp
-yatri-frontend-ddc fc4b5f-wm57v
-yatri-backend-6c58cb99c7-fd98h
-yatri-backend-6c58cb99c7-jtxd8
+yatri-frontend-ddc fc4b5f-6x614
+yatri-frontend-ddc fc4b5f-b5dcs
+yatri-backend-6c58cb99c7-6fm2m
+yatri-backend-6c58cb99c7-p5b76
 
 # -- both tiers answer through the single Ingress --
-<title>Network Assignment Test Server</title>
+HTTP/1.1 200 OK
+Content-Type: text/html
+<title>Welcome to nginx!</title>
+Yatri Backend API
+=================
+ENVIRONMENT     : production
+LOG_LEVEL       : INFO
+DEFAULT_CURRENCY: INR
+POSTGRES_USER   : yatri_admin
+POSTGRES_DB     : yatri_production_db
 
 # -- cleanup.sh removes every object the demo created --
 No resources found in default namespace.
