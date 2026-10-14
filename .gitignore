@@ -5,3 +5,8 @@
 # Regenerate instead:  python gen_cert.py  (or: openssl req -x509 ...)
 *.key
 *.pem
+
+# OS & Python artifacts
+.DS_Store
+__pycache__/
+*.pyc
