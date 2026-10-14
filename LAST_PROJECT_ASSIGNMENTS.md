@@ -101,28 +101,28 @@ When implementing future sessions, maintain the established repository quality s
 
 ---
 
-## 4. Upcoming Sessions in Reference Repository (`reference/main`)
+## 4. Sessions 13 – 21 Imported Starter Files
 
-The reference repository (`https://github.com/Nency-Ravaliya/devops-heros`) contains the syllabus materials for upcoming assignments:
-* **Session 13**: `session-13-storage-hpa-probes`
+All starter directories and manifests from the reference repository have been checked out directly into the local workspace:
+* **`session-13-storage-hpa-probes/`**:
   * Volumes (`emptyDir`, `hostPath`), PV, PVC, StorageClass
   * Horizontal Pod Autoscaler (HPA), metrics-server, load generation
   * Probes (Liveness, Readiness, Startup)
-  * Mini-project integration
-* **Session 14**: `session-14-kubernetes-troubleshooting`
+  * Mini-project integration manifests
+* **`session-14-kubernetes-troubleshooting/`**:
   * Pod crash loops (`CrashLoopBackOff`), image pull errors, pending states, node debugging
-* **Session 15**: `session-15-helm`
+* **`session-15-helm/`**:
   * Helm charts, templating, values, release management
-* **Session 16**: `session-16-github-actions`
+* **`session-16-github-actions/`**:
   * CI/CD pipelines, workflows, automated testing, Docker build & push
-* **Session 17**: `session-17-devsecops`
+* **`session-17-devsecops/`**:
   * Security scanning, Trivy, SonarQube, secret scanning
-* **Session 18 & 19**: `session18-terraform-iac` & `session19-cloud-terraform`
+* **`session18-terraform-iac/` & `session19-cloud-terraform/`**:
   * Infrastructure as Code, AWS / cloud provisioning, Terraform state & modules
-* **Session 20**: `session20-monitoring-observability-gitops`
+* **`session20-monitoring-observability-gitops/`**:
   * Prometheus, Grafana, ArgoCD, GitOps workflows
-* **Session 21**: `session21-python`
-  * DevOps automation scripts with Python
+* **`session21-python/`**:
+  * Full-stack taskboard project: backend (FastAPI/Alembic), frontend (React/Vite), Helm, k8s, monitoring, Terraform, CI/CD
 
 ---
 
@@ -130,10 +130,7 @@ The reference repository (`https://github.com/Nency-Ravaliya/devops-heros`) cont
 
 When opening a new chat to continue:
 1. Note that **Sessions 01 through 12 are 100% completed**.
-2. Run `git status` to verify working branch `sync-to-devops`.
-3. Check reference files directly from the fetched remote using:
-   ```bash
-   git ls-tree reference/main:<session-folder>
-   git show reference/main:<session-folder>/<file>
-   ```
-4. Read the shared task requirements from the user and generate matching folder structures, YAML manifests, execution logs, and detailed `Readme.md` documentation following the standard established above.
+2. **Sessions 13 through 21 starter code and materials are already present in the workspace**.
+3. Run `git status` to verify working branch `sync-to-devops`.
+4. Read the shared task requirements from the user, inspect the starter code in the corresponding session directory (e.g., `session-13-storage-hpa-probes`), and generate matching documentation, verified YAMLs, execution logs, and detailed `Readme.md` following the standards established above.
+
