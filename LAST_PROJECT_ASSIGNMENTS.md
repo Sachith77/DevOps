@@ -121,16 +121,23 @@ All starter directories and manifests from the reference repository have been ch
   * Infrastructure as Code, AWS / cloud provisioning, Terraform state & modules
 * **`session20-monitoring-observability-gitops/`**:
   * Prometheus, Grafana, ArgoCD, GitOps workflows
-* **`session21-python/`**:
-  * Full-stack taskboard project: backend (FastAPI/Alembic), frontend (React/Vite), Helm, k8s, monitoring, Terraform, CI/CD
+* **`session21-python/` (Capstone Project Completed — 100/100 Points Scope)**:
+  * Application: DevOps HeroBoard personalized for Sachith Reddy (FastAPI + React/Vite + PostgreSQL + Alembic).
+  * Testing: 10 test cases in Pytest passing cleanly in 3.07s against isolated SQLite test database.
+  * Docker: Both frontend & backend running as non-root users (`uid=101` nginx and `uid=10001` appuser); multi-stage build; `docker-compose.yml` with healthchecks.
+  * Screenshots: Captured live in `session21-python/screenshots/` (Dashboard, modal, task lifecycle).
+  * CI/CD & DevSecOps: GitHub Actions workflow with Trivy vulnerability scanning, GHCR publishing, and Helm deployment.
+  * IaC: Terraform AWS VPC + EKS modules with `terraform.tfvars.example`.
+  * Orchestration & Observability: Kubernetes manifests, Helm chart (`helm/taskboard`), Prometheus `/metrics`, ServiceMonitor, Grafana values.
+  * Documentation: Complete, ready-to-submit [session21-python/README.md](file:///d:/devops-heros/session21-python/README.md) and [GRADING.md](file:///d:/devops-heros/session21-python/GRADING.md).
 
 ---
 
 ## 5. Quick Pick-Up Instructions for New Chat
 
 When opening a new chat to continue:
-1. Note that **Sessions 01 through 12 are 100% completed**.
-2. **Sessions 13 through 21 starter code and materials are already present in the workspace**.
+1. Note that **Sessions 01 through 12 AND Session 21 (Capstone) are 100% completed and verified**.
+2. **Sessions 13 through 20 starter materials and directories are present in the workspace**.
 3. Run `git status` to verify working branch `sync-to-devops`.
-4. Read the shared task requirements from the user, inspect the starter code in the corresponding session directory (e.g., `session-13-storage-hpa-probes`), and generate matching documentation, verified YAMLs, execution logs, and detailed `Readme.md` following the standards established above.
+4. Read the shared task requirements from the user for any remaining sessions (Sessions 13 to 20), inspect the starter code in the corresponding session directory, and generate matching documentation, verified YAMLs, execution logs, and detailed `Readme.md` following the standards established above.
 

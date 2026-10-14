@@ -1,0 +1,6 @@
+# Example Terraform Variables File
+# Copy to terraform.tfvars and customize. DO NOT commit actual secrets or credentials.
+
+aws_region   = "ap-south-1"
+cluster_name = "heroboard-eks"
+environment  = "dev"
