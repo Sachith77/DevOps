@@ -8,7 +8,10 @@ function Invoke-Checked {
     # Keep this a simple function: advanced PowerShell parameters consume native
     # flags such as kubectl -o as ambiguous -OutVariable/-OutBuffer parameters.
     param([string]$Tool)
-    $Arguments = $args
+    $Arguments = foreach ($argument in $args) {
+        # Match native-command comma syntax (for example get pods,svc).
+        if ($argument -is [Array]) { $argument -join ',' } else { $argument }
+    }
     $null = Get-Command $Tool -ErrorAction Stop
     $previousPreference = $ErrorActionPreference
     try {
