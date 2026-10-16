@@ -1,6 +1,22 @@
 grafana:
   enabled: true
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: monitoring
 prometheus:
   prometheusSpec:
+    # Discover ServiceMonitors in the application namespace.
     serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
     serviceMonitorNamespaceSelector: {}
+    retention: 2d
+    resources:
+      requests: {cpu: 100m, memory: 512Mi}
+# EKS control plane components are managed by AWS, not reachable as scrape targets.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false

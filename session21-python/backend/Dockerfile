@@ -8,4 +8,4 @@ COPY alembic ./alembic
 COPY app ./app
 USER 10001
 EXPOSE 8000
-CMD ["sh", "-c", "for i in $(seq 1 30); do alembic upgrade head && break || sleep 2; done && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["python", "-m", "app.start"]

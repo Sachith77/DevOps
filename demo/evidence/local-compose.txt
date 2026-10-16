@@ -1,0 +1,4 @@
+NAME                          IMAGE                       COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+session21-python-backend-1    session21-python-backend    "python -m app.start"    backend    57 minutes ago   Up 57 minutes             0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+session21-python-frontend-1   session21-python-frontend   "/docker-entrypoint.…"   frontend   57 minutes ago   Up 57 minutes             0.0.0.0:3000->8080/tcp, [::]:3000->8080/tcp
+session21-python-postgres-1   postgres:16-alpine          "docker-entrypoint.s…"   postgres   57 minutes ago   Up 57 minutes (healthy)   5432/tcp

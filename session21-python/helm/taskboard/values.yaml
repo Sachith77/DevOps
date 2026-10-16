@@ -1,20 +1,25 @@
+# Keep the original chart/release name to minimize migration work.
 frontend:
-  image: ghcr.io/YOUR_ORG/taskboard-frontend
-  tag: latest
+  image: ghcr.io/sachith77/herodesk-frontend
+  tag: SET_IMAGE_SHA
 backend:
-  image: ghcr.io/YOUR_ORG/taskboard-backend
-  tag: latest
+  image: ghcr.io/sachith77/herodesk-backend
+  tag: SET_IMAGE_SHA
 replicaCount: 2
-namespace: taskboard
+imagePullPolicy: IfNotPresent
 imagePullSecrets: []
 postgres:
-  host: taskboard-postgres
   database: taskboard
-  username: taskboard
-  password: taskboard
+  # Create this Secret separately; Helm/Git never store the password.
+  existingSecret: herodesk-postgres
+  storageClassName: ""
+  storageSize: 5Gi
+  image: postgres:16-alpine
 ingress:
   enabled: false
-  host: taskboard.local
+  className: alb
+  host: ""
+  annotations: {}
 hpa:
   enabled: true
   minReplicas: 2
@@ -25,4 +30,4 @@ resources:
   limits: {cpu: 500m, memory: 512Mi}
 monitoring:
   serviceMonitor:
-    enabled: true
+    enabled: false

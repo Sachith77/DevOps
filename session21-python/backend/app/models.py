@@ -11,4 +11,6 @@ class Task(Base):
     priority: Mapped[str] = mapped_column(String(20), default="MEDIUM")
     status: Mapped[str] = mapped_column(String(30), default="TODO")
     assignee: Mapped[str] = mapped_column(String(120), default="Unassigned")
+    requester: Mapped[str] = mapped_column(String(120), default="Unknown")
+    category: Mapped[str] = mapped_column(String(30), default="OTHER")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

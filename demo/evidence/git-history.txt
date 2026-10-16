@@ -1,0 +1,10 @@
+c749346 fix(ci): fix Trivy action version tag to v0.36.0 and enforce lowercase GHCR owner
+256dcd4 feat(capstone): complete Session 21 DevOps HeroBoard for Sachith Reddy (100/100 points rubric)
+2f69a61 docs: update LAST_PROJECT_ASSIGNMENTS.md with imported sessions 13-21 info
+9197dae feat: import starter code and materials for sessions 13-21 from reference repository
+c692f07 docs: add LAST_PROJECT_ASSIGNMENTS.md handover reference summary
+e8ef509 Fix L12 shots 10-14: port-forward collided with a local dev server on 8080
+632c709 Complete Sessions 09-12: Ingress, ConfigMaps, Secrets and Networking READMEs
+3031c93 Clean up duplicate session folders
+a0dbb48 Add remaining sessions 08-12 and assignments
+6b8df35 Add DevOps homework: Linux, shell scripting, networking, git, and Docker

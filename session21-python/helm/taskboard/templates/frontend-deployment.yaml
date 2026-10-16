@@ -1,20 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
-metadata: {name: taskboard-frontend, labels: {app: taskboard-frontend}}
+metadata:
+  name: {{ include "taskboard.fullname" . }}-frontend
 spec:
   replicas: {{ .Values.replicaCount }}
-  selector: {matchLabels: {app: taskboard-frontend}}
+  selector:
+    matchLabels: {app: "{{ include "taskboard.fullname" . }}-frontend"}
   template:
-    metadata: {labels: {app: taskboard-frontend}}
+    metadata:
+      labels: {app: "{{ include "taskboard.fullname" . }}-frontend"}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml . | indent 8 }}
       {{- end }}
+      securityContext: {runAsNonRoot: true, runAsUser: 101, fsGroup: 101}
       containers:
-      - name: frontend
-        image: "{{ .Values.frontend.image }}:{{ .Values.frontend.tag }}"
-        ports: [{containerPort: 80}]
-        readinessProbe: {httpGet: {path: /, port: 80}, initialDelaySeconds: 5}
-        livenessProbe: {httpGet: {path: /, port: 80}, initialDelaySeconds: 10}
-        resources: {requests: {cpu: 50m, memory: 64Mi}, limits: {cpu: 200m, memory: 128Mi}}
+        - name: frontend
+          image: "{{ .Values.frontend.image }}:{{ .Values.frontend.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          securityContext: {allowPrivilegeEscalation: false, capabilities: {drop: ["ALL"]}}
+          env:
+            - {name: BACKEND_HOST, value: "{{ include "taskboard.fullname" . }}-backend"}
+          ports: [{containerPort: 8080}]
+          readinessProbe: {httpGet: {path: /health, port: 8080}, initialDelaySeconds: 5}
+          livenessProbe: {httpGet: {path: /health, port: 8080}, initialDelaySeconds: 10}
+          resources: {requests: {cpu: 50m, memory: 64Mi}, limits: {cpu: 200m, memory: 128Mi}}

@@ -1,6 +1,6 @@
-replicaCount: 1
+# Local Kubernetes: supply locally loaded images/tags with --set.
+replicaCount: 2
 ingress:
-  enabled: true
-  host: taskboard.local
+  enabled: false
 hpa:
   enabled: false

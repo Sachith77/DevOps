@@ -1,92 +1,124 @@
-name: Session 21 DevOps HeroBoard CI/CD
+name: Session 21 HeroDesk DevSecOps
 on:
   push:
-    paths:
-      - 'session21-python/**'
-      - '.github/workflows/session21-ci-cd.yml'
     branches: [main, sync-to-devops]
+    paths: ['session21-python/**', '.github/workflows/session21-ci-cd.yml']
   pull_request:
-    paths:
-      - 'session21-python/**'
     branches: [main, sync-to-devops]
+    paths: ['session21-python/**', '.github/workflows/session21-ci-cd.yml']
+  workflow_dispatch:
 
-env:
-  REGISTRY: ghcr.io
+permissions:
+  contents: read
+
+concurrency:
+  group: herodesk-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    name: Automated Tests (Pytest + Frontend Build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install backend dependencies
-        run: pip install -r requirements.txt
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -r requirements.txt
         working-directory: session21-python/backend
-
-      - name: Run Pytest test suite
-        run: pytest -v
+      - run: pytest -v
         working-directory: session21-python/backend
-
-      - name: Set up Node.js 22
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Build React frontend
-        run: npm install && npm run build
+          cache: npm
+          cache-dependency-path: session21-python/frontend/package-lock.json
+      - run: npm ci && npm run build
         working-directory: session21-python/frontend
+      - uses: azure/setup-helm@v4
+        with: {version: v3.17.3}
+      - run: |
+          helm lint session21-python/helm/taskboard --strict
+          helm template taskboard session21-python/helm/taskboard -f session21-python/helm/taskboard/values-prod.yaml > /tmp/herodesk.yaml
+      - uses: hashicorp/setup-terraform@v3
+      - run: |
+          terraform fmt -check -recursive
+          terraform init -backend=false -input=false
+          terraform validate
+        working-directory: session21-python/terraform
 
   build-scan-push:
-    name: Container Build & Trivy Security Scan
+    # Forks and pull requests test code without registry credentials or publishing.
+    if: github.event_name != 'pull_request'
     needs: test
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    permissions: {contents: read, packages: write}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set lowercase repository owner
-        run: |
-          echo "OWNER_LC=${OWNER,,}" >> $GITHUB_ENV
-        env:
-          OWNER: '${{ github.repository_owner }}'
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Set image names
+        env: {OWNER: '${{ github.repository_owner }}'}
+        run: echo "OWNER_LC=${OWNER,,}" >> "$GITHUB_ENV"
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Docker images
+      - name: Build both images
+        id: build
         run: |
-          docker build -t ghcr.io/${{ env.OWNER_LC }}/heroboard-backend:${{ github.sha }} ./session21-python/backend
-          docker build -t ghcr.io/${{ env.OWNER_LC }}/heroboard-frontend:${{ github.sha }} ./session21-python/frontend
-
-      - name: Trivy vulnerability scan (Backend)
+          docker build -t "ghcr.io/${OWNER_LC}/herodesk-backend:${GITHUB_SHA}" session21-python/backend
+          docker build -t "ghcr.io/${OWNER_LC}/herodesk-frontend:${GITHUB_SHA}" session21-python/frontend
+      - name: Scan backend
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ghcr.io/${{ env.OWNER_LC }}/heroboard-backend:${{ github.sha }}
+          image-ref: ghcr.io/${{ env.OWNER_LC }}/herodesk-backend:${{ github.sha }}
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: '0'
-
-      - name: Trivy vulnerability scan (Frontend)
+          exit-code: '1'
+          format: table
+          output: trivy-backend.txt
+      - name: Scan frontend
+        if: always() && steps.build.outcome == 'success'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ghcr.io/${{ env.OWNER_LC }}/heroboard-frontend:${{ github.sha }}
+          image-ref: ghcr.io/${{ env.OWNER_LC }}/herodesk-frontend:${{ github.sha }}
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: '0'
-
-      - name: Publish images to GHCR
+          exit-code: '1'
+          format: table
+          output: trivy-frontend.txt
+      - name: Save security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: {name: trivy-reports, path: 'trivy-*.txt'}
+      - name: Publish only after both security gates pass
         run: |
-          docker push ghcr.io/${{ env.OWNER_LC }}/heroboard-backend:${{ github.sha }}
-          docker push ghcr.io/${{ env.OWNER_LC }}/heroboard-frontend:${{ github.sha }}
+          docker push "ghcr.io/${OWNER_LC}/herodesk-backend:${GITHUB_SHA}"
+          docker push "ghcr.io/${OWNER_LC}/herodesk-frontend:${GITHUB_SHA}"
+
+  promote:
+    name: Promote scanned images to GitOps
+    needs: build-scan-push
+    if: github.ref == 'refs/heads/main' && vars.GITOPS_AUTO_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    permissions: {contents: write}
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, fetch-depth: 0}
+      - name: Update the desired image revision
+        env: {OWNER: '${{ github.repository_owner }}'}
+        run: |
+          # Do not promote an older build after a newer source push.
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          owner, sha = os.environ["OWNER"].lower(), os.environ["GITHUB_SHA"]
+          Path("session21-python/gitops/images.yaml").write_text(
+              f"backend:\n  image: ghcr.io/{owner}/herodesk-backend\n  tag: '{sha}'\n"
+              f"frontend:\n  image: ghcr.io/{owner}/herodesk-frontend\n  tag: '{sha}'\n")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add session21-python/gitops/images.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "deploy: promote HeroDesk ${GITHUB_SHA} [skip ci]"
+          git push origin HEAD:main

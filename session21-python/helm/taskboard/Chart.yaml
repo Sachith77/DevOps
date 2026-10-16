@@ -1,5 +1,5 @@
 apiVersion: v2
 name: taskboard
-description: TaskBoard full-stack DevOps capstone
+description: HeroDesk helpdesk DevSecOps capstone (adapted from TaskBoard)
 version: 1.0.0
 appVersion: "1.0.0"

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: herodesk
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Sachith77/DevOps.git
+    targetRevision: main
+    path: session21-python/helm/taskboard
+    helm:
+      releaseName: taskboard
+      valueFiles:
+        - values-prod.yaml
+        - ../../gitops/images.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: taskboard
+  syncPolicy:
+    automated: {prune: false, selfHeal: true}
+    syncOptions:
+      - CreateNamespace=true

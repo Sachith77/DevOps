@@ -1,0 +1,7 @@
+ id |            title            | requester | category |   status
+----+-----------------------------+-----------+----------+-------------
+  1 | Deploy EKS Cluster          | Unknown   | OTHER    | IN_PROGRESS
+  2 | Setup Prometheus Monitoring | Unknown   | OTHER    | TODO
+  3 | Setup Prometheus Monitoring | Unknown   | OTHER    | TODO
+  4 | Setup Prometheus Monitoring | Unknown   | OTHER    | TODO
+(4 rows)

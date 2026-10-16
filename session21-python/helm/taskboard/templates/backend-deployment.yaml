@@ -3,27 +3,39 @@ kind: Deployment
 metadata:
   name: {{ include "taskboard.fullname" . }}-backend
 spec:
+  {{- if not .Values.hpa.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
-    matchLabels: {app: taskboard-backend}
+    matchLabels: {app: "{{ include "taskboard.fullname" . }}-backend"}
   template:
     metadata:
-      labels: {app: taskboard-backend}
+      labels: {app: "{{ include "taskboard.fullname" . }}-backend"}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, fsGroup: 10001}
       containers:
         - name: backend
           image: "{{ .Values.backend.image }}:{{ .Values.backend.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          securityContext: {allowPrivilegeEscalation: false, capabilities: {drop: ["ALL"]}}
           ports: [{containerPort: 8000}]
           env:
             - name: DATABASE_URL
-              value: "postgresql+psycopg://{{ .Values.postgres.username }}:{{ .Values.postgres.password }}@{{ .Values.postgres.host }}:5432/{{ .Values.postgres.database }}"
+              valueFrom:
+                secretKeyRef: {name: "{{ .Values.postgres.existingSecret }}", key: database-url}
+          startupProbe:
+            httpGet: {path: /health, port: 8000}
+            failureThreshold: 40
+            periodSeconds: 5
           readinessProbe:
             httpGet: {path: /ready, port: 8000}
-            initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
             httpGet: {path: /health, port: 8000}
-            initialDelaySeconds: 20
             periodSeconds: 15
           resources:
 {{ toYaml .Values.resources | indent 12 }}

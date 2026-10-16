@@ -1,0 +1,8 @@
+# CI updates this file after tests and both Trivy scans pass.
+# For the first deployment, set BOTH tags to a successfully published commit SHA.
+backend:
+  image: ghcr.io/sachith77/herodesk-backend
+  tag: SET_IMAGE_SHA
+frontend:
+  image: ghcr.io/sachith77/herodesk-frontend
+  tag: SET_IMAGE_SHA

@@ -1,116 +1,125 @@
 import os
-os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+os.environ["DATABASE_URL"] = "sqlite://"
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
 from app.main import app
-from app.db import Base, engine
+from app.db import Base, get_db
 
-@pytest.fixture(scope="session", autouse=True)
-def setup_database():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
-    if os.path.exists("./test.db"):
-        try:
-            os.remove("./test.db")
-        except OSError:
-            pass
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    # Each test gets its own database. Tests never connect to local PostgreSQL.
+    test_engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    Base.metadata.create_all(test_engine)
+    sessions = sessionmaker(bind=test_engine)
+    def override_db():
+        with sessions() as session:
+            yield session
+    app.dependency_overrides[get_db] = override_db
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
+    test_engine.dispose()
 
-def test_health():
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json() == {"status": "UP"}
 
-def test_root():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json()["service"] == "DevOps HeroBoard API"
-    assert response.json()["version"] == "1.0.0"
-
-def test_ready():
-    response = client.get("/ready")
-    assert response.status_code == 200
-    assert response.json() == {"status": "READY"}
-
-def test_create_task():
-    payload = {
-        "title": "Configure EKS Cluster",
-        "description": "Deploy AWS EKS managed node groups via Terraform",
-        "priority": "HIGH",
-        "assignee": "Sachith Reddy"
-    }
-    response = client.post("/api/tasks", json=payload)
+@pytest.fixture
+def ticket(client):
+    response = client.post("/api/tickets", json={
+        "title": "Office VPN unavailable", "requester": "Finance team",
+        "category": "NETWORK", "priority": "HIGH", "assignee": "Sachith Reddy"
+    })
     assert response.status_code == 201
-    data = response.json()
-    assert data["title"] == payload["title"]
-    assert data["priority"] == "HIGH"
-    assert data["assignee"] == "Sachith Reddy"
-    assert data["status"] == "TODO"
-    assert "id" in data
+    return response.json()
 
-def test_list_tasks():
-    response = client.get("/api/tasks")
+
+def test_health(client):
+    assert client.get("/health").json() == {"status": "UP"}
+
+
+def test_root(client):
+    assert client.get("/").json()["service"] == "HeroDesk Helpdesk API"
+
+
+def test_ready(client):
+    assert client.get("/ready").json() == {"status": "READY"}
+
+
+def test_create_ticket(ticket):
+    assert ticket["requester"] == "Finance team"
+    assert ticket["category"] == "NETWORK"
+    assert ticket["status"] == "TODO"
+    assert ticket["created_at"]
+
+
+def test_list_tickets(client, ticket):
+    assert client.get("/api/tickets").json() == [ticket]
+
+
+def test_get_ticket(client, ticket):
+    assert client.get(f"/api/tickets/{ticket['id']}").json() == ticket
+
+
+def test_update_preserves_details(client, ticket):
+    response = client.put(f"/api/tickets/{ticket['id']}", json={"status": "IN_PROGRESS"})
     assert response.status_code == 200
-    tasks = response.json()
-    assert isinstance(tasks, list)
-    assert len(tasks) >= 1
+    assert response.json()["status"] == "IN_PROGRESS"
+    assert response.json()["requester"] == ticket["requester"]
+    assert response.json()["title"] == ticket["title"]
 
-def test_get_task_by_id():
-    create_res = client.post("/api/tasks", json={
-        "title": "Set up Prometheus & Grafana",
-        "priority": "MEDIUM",
-        "assignee": "Sachith Reddy"
-    })
-    task_id = create_res.json()["id"]
 
-    response = client.get(f"/api/tasks/{task_id}")
-    assert response.status_code == 200
-    assert response.json()["id"] == task_id
-    assert response.json()["title"] == "Set up Prometheus & Grafana"
+def test_stats_follow_resolution(client, ticket):
+    assert client.get("/api/tickets/stats").json() == {"total": 1, "todo": 1, "inProgress": 0, "done": 0}
+    client.put(f"/api/tickets/{ticket['id']}", json={"status": "DONE"})
+    assert client.get("/api/tickets/stats").json() == {"total": 1, "todo": 0, "inProgress": 0, "done": 1}
 
-def test_update_task():
-    create_res = client.post("/api/tasks", json={
-        "title": "Automate CI/CD pipeline",
-        "priority": "HIGH",
-        "assignee": "Sachith Reddy"
-    })
-    task_id = create_res.json()["id"]
 
-    update_res = client.put(f"/api/tasks/{task_id}", json={
-        "status": "IN_PROGRESS",
-        "priority": "HIGH"
-    })
-    assert update_res.status_code == 200
-    assert update_res.json()["status"] == "IN_PROGRESS"
+def test_filter_by_category_and_status(client, ticket):
+    assert len(client.get("/api/tickets?category=NETWORK&status=TODO").json()) == 1
+    assert client.get("/api/tickets?category=ACCESS").json() == []
+    assert client.get("/api/tickets?status=DONE").json() == []
 
-def test_task_stats():
-    response = client.get("/api/tasks/stats")
-    assert response.status_code == 200
-    stats = response.json()
-    assert "total" in stats
-    assert "todo" in stats
-    assert "inProgress" in stats
-    assert "done" in stats
-    assert stats["total"] >= 1
 
-def test_delete_task():
-    create_res = client.post("/api/tasks", json={
-        "title": "Temporary cleanup test task",
-        "priority": "LOW",
-        "assignee": "Sachith Reddy"
-    })
-    task_id = create_res.json()["id"]
+def test_delete_ticket(client, ticket):
+    assert client.delete(f"/api/tickets/{ticket['id']}").status_code == 204
+    assert client.get(f"/api/tickets/{ticket['id']}").status_code == 404
+    assert client.get("/api/tickets/stats").json()["total"] == 0
 
-    del_res = client.delete(f"/api/tasks/{task_id}")
-    assert del_res.status_code == 204
 
-    get_res = client.get(f"/api/tasks/{task_id}")
-    assert get_res.status_code == 404
-
-def test_get_nonexistent_task():
-    response = client.get("/api/tasks/999999")
+@pytest.mark.parametrize("method", ["get", "put", "delete"])
+def test_missing_ticket(client, method):
+    kwargs = {"json": {"status": "DONE"}} if method == "put" else {}
+    response = getattr(client, method)("/api/tickets/999999", **kwargs)
     assert response.status_code == 404
-    assert response.json()["detail"] == "Task not found"
+    assert response.json()["detail"] == "Ticket not found"
+
+
+@pytest.mark.parametrize("payload", [
+    {"title": ""}, {"title": "x", "category": "INVALID"}, {"title": "x", "status": "INVALID"},
+    {"title": "x", "priority": "URGENT"}, {"title": "x", "requester": "a" * 121}
+])
+def test_invalid_create(client, payload):
+    assert client.post("/api/tickets", json=payload).status_code == 422
+    assert client.get("/api/tickets").json() == []
+
+
+@pytest.mark.parametrize("field", ["title", "status", "priority", "requester", "category"])
+def test_null_update_does_not_corrupt_ticket(client, ticket, field):
+    assert client.put(f"/api/tickets/{ticket['id']}", json={field: None}).status_code == 422
+    assert client.get(f"/api/tickets/{ticket['id']}").json() == ticket
+
+
+def test_legacy_tasks_route(client, ticket):
+    # Old clients still work after the domain migration.
+    assert client.get(f"/api/tasks/{ticket['id']}").json() == ticket
+
+
+def test_metrics(client):
+    client.get("/health")
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "http_requests_total" in response.text

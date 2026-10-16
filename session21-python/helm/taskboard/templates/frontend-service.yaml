@@ -1,6 +1,8 @@
 apiVersion: v1
 kind: Service
-metadata: {name: taskboard-frontend}
+metadata:
+  name: {{ include "taskboard.fullname" . }}-frontend
 spec:
-  selector: {app: taskboard-frontend}
-  ports: [{port: 80, targetPort: 80}]
+  type: ClusterIP
+  selector: {app: "{{ include "taskboard.fullname" . }}-frontend"}
+  ports: [{port: 80, targetPort: 8080}]

@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: herodesk-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: '1'
+data:
+  herodesk.json: |
+    {
+      "title": "HeroDesk - Support API",
+      "uid": "herodesk-api",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "10s",
+      "panels": [
+        {
+          "id": 1,
+          "type": "timeseries",
+          "title": "API requests per second",
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{namespace=\"taskboard\"}[1m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "type": "timeseries",
+          "title": "Server errors per second",
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{namespace=\"taskboard\",status=~\"5..\"}[1m])) or vector(0)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "type": "timeseries",
+          "title": "Average request duration (seconds)",
+          "gridPos": {
+            "h": 9,
+            "w": 24,
+            "x": 0,
+            "y": 9
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_request_duration_seconds_sum{namespace=\"taskboard\"}[1m])) / clamp_min(sum(rate(http_request_duration_seconds_count{namespace=\"taskboard\"}[1m])), 0.001)",
+              "refId": "A"
+            }
+          ]
+        }
+      ],
+      "time": {
+        "from": "now-15m",
+        "to": "now"
+      }
+    }
