@@ -1,4 +1,0 @@
-NAME                 DESIRED   READY   IMAGES
-taskboard-backend    2         2       ghcr.io/sachith77/herodesk-backend:0623f167c0c6eb954176d9065e3218d7e4324d15
-taskboard-frontend   2         2       ghcr.io/sachith77/herodesk-frontend:0623f167c0c6eb954176d9065e3218d7e4324d15
-taskboard-postgres   1         1       postgres:16-alpine

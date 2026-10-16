@@ -1,1 +1,0 @@
-Completed 1000 requests. A simple read workload may not trigger CPU autoscaling.

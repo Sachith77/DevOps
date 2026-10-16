@@ -9,7 +9,7 @@ Staff create requests; support engineers assign priorities, advance tickets
 through Open / Working / Resolved, filter the queue, and delete tickets.
 
 This adapts the [course reference](https://github.com/Nency-Ravaliya/devsecops-python)
-and your existing HeroBoard with limited application changes. The React layout,
+and the existing HeroBoard with limited application changes. The React layout,
 FastAPI CRUD code, database table, and chart directory are reused. Migration
 `0002_helpdesk_fields` adds requester/category fields and preserves existing tasks.
 The old `/api/tasks` endpoints remain compatibility aliases. The chart, release,
@@ -39,31 +39,27 @@ React/Vite, FastAPI, SQLAlchemy, PostgreSQL 16, Alembic, and Pytest form the app
 Docker, Actions, Trivy, GHCR, Terraform, EKS, Helm, Argo CD, ALB Ingress, Metrics
 Server, HPA, EBS CSI, Prometheus Operator, and Grafana form the delivery stack.
 
-## Verified work and remaining evidence
+## Project status and submission
 
-Use the [complete screenshot checklist](../demo/SCREENSHOTS.md) for every required capture.
-Run `.\scripts\capture-local-evidence.ps1` to save local command output under `demo/evidence/`.
+The [CI pipeline](https://github.com/Sachith77/DevOps/actions/runs/38969815778)
+passed 25 backend tests, the frontend build, security scans, and SHA-tagged image
+publication. The AWS deployment was validated with Helm, Argo CD Synced/Healthy,
+ALB ticket CRUD, both Prometheus targets UP, and live Grafana panel data.
 
-See [VALIDATION.md](VALIDATION.md) for checks performed during this update.
-The cloud run provisioned EKS, deployed the direct Helm demonstration and the
-Argo CD application, and verified Synced/Healthy status and both Prometheus
-targets UP. The [latest successful pipeline](https://github.com/Sachith77/DevOps/actions/runs/38969815778)
-built, scanned, published, and promoted SHA-tagged images. See the validation
-record for the final API, Grafana, and teardown results. Saved command output
-is in [demo/evidence](../demo/evidence); required screenshots and the narrated
-video still need manual capture during a fresh deployment after cleanup.
-The AWS lab has been destroyed (69 Terraform resources); the local Compose stack
-and its data are retained. The KMS key follows its scheduled deletion window.
+The AWS lab was destroyed after validation (69 Terraform resources). The KMS key
+is scheduled for deletion on 16 November 2026. Cloud captures require a fresh
+deployment before cleanup.
 
-Each command block starts from the project directory and should run in its own
-terminal when it starts a server or port forward.
+The [11-slide presentation](../demo/presentation.pptx) is included. Actual screenshots
+and the mandatory narrated video still need to be added. Save captures under
+`demo/screenshots/` and the recording as `demo/walkthrough.mp4`, or use a GitHub
+release asset. Present the slides, then demonstrate code, CI/CD, Terraform/AWS,
+Argo CD, Kubernetes, Prometheus Targets UP, and populated Grafana panels.
 
-The latest [GRADING.md](GRADING.md) and [SUBMISSION.md](SUBMISSION.md) also require
-PPT/PDF slides and a recorded walkthrough. The presentation is stored in
-[demo/presentation.pptx](../demo/presentation.pptx); the video still needs a real narrated recording. [submission guide](../demo/README.md) provides
-the slide outline, recording order, and evidence checklist. Complete these before
-submission. The old README's self-awarded scores and unsupported deployment
-claims have been removed.
+Follow the [course grading rubric](https://github.com/Nency-Ravaliya/devsecops-python/blob/main/GRADING.md)
+and [submission requirements](https://github.com/Nency-Ravaliya/devsecops-python/blob/main/SUBMISSION.md)
+for the required evidence. Each server or port-forward command needs its own
+terminal.
 
 ## 1. Run locally in PowerShell
 
@@ -292,7 +288,7 @@ HPA scales Pods, not EC2 nodes.
 Use the deliberately broken manifests in `troubleshooting/` in a disposable
 namespace. Run `.\scripts\troubleshooting-lab.ps1 -Context herodesk-eks` to
 exercise and repair both failures without touching the application. Inspect Pod events for ImagePullBackOff, and Service selectors and
-EndpointSlices for empty endpoints. The [demo guide](../demo/README.md) lists evidence.
+EndpointSlices for empty endpoints.
 
 | Symptom | Check |
 | --- | --- |

@@ -10,3 +10,8 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+# Local submission planning and saved command output
+/demo/SCREENSHOTS.md
+/demo/README.md
+/demo/evidence/

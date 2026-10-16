@@ -1,9 +1,0 @@
-Argo CD: sync= health=
-Argo CD: sync=Synced health=Progressing
-Argo CD: sync=Synced health=Progressing
-Argo CD: sync=Synced health=Degraded
-Argo CD: sync=Synced health=Degraded
-Argo CD: sync=Synced health=Degraded
-Argo CD: sync=Synced health=Healthy
-deployment "taskboard-backend" successfully rolled out
-deployment "taskboard-frontend" successfully rolled out
