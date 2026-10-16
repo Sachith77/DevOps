@@ -7,10 +7,12 @@ try {
     $expectedCluster = Invoke-Checked terraform output -raw cluster_name
     if ($Context -ne $expectedCluster) { throw 'Context must match the Terraform-managed lab cluster.' }
     # Removing only this Application stops reconciliation. No resource finalizer is configured.
-    Invoke-Checked kubectl --context $Context -n argocd delete application herodesk --ignore-not-found --cascade=orphan
+    $applicationCrd = Invoke-Checked kubectl --context $Context get crd applications.argoproj.io --ignore-not-found -o name --request-timeout=30s
+    if ($applicationCrd) {
+        Invoke-Checked kubectl --context $Context -n argocd delete application herodesk --ignore-not-found --cascade=orphan --request-timeout=30s
+    }
     foreach ($namespace in @('taskboard','taskboard-helm-demo')) {
-        $exists = & kubectl --context $Context get namespace $namespace --ignore-not-found -o name
-        if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect lab namespace.' }
+        $exists = Invoke-Checked kubectl --context $Context get namespace $namespace --ignore-not-found -o name --request-timeout=30s
         if ($exists) {
             Invoke-Checked kubectl --context $Context -n $namespace delete ingress --all --ignore-not-found --wait=true --timeout=10m
             Invoke-Checked kubectl --context $Context delete namespace $namespace --wait=true --timeout=10m
@@ -25,5 +27,10 @@ try {
         if ((Get-Date) -gt $deadline) { throw 'App volumes remain. Inspect PV finalizers before destroying EKS.' }
         Start-Sleep -Seconds 10
     } while ($true)
+    # Remove the temporary cluster installer even after an interrupted bootstrap.
+    Invoke-Checked kubectl --context $Context delete clusterrolebinding herodesk-chart-installer --ignore-not-found --request-timeout=30s
+    foreach ($namespace in @('herodesk-ops','herodesk-lab','argocd','monitoring')) {
+        Invoke-Checked kubectl --context $Context delete namespace $namespace --ignore-not-found --wait=true --timeout=5m
+    }
     Invoke-Checked terraform destroy -auto-approve -input=false -no-color
 } finally { Pop-Location }

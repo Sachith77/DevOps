@@ -9,7 +9,7 @@ Invoke-Checked kubectl --context $Context -n $namespace apply -f "$project/troub
 Start-Sleep -Seconds 20
 Invoke-Checked kubectl --context $Context -n $namespace get pods
 Invoke-Checked kubectl --context $Context -n $namespace describe deployment taskboard-broken-image
-Invoke-Checked kubectl --context $Context -n $namespace get events --sort-by=.lastTimestamp
+Invoke-Checked kubectl --context $Context -n $namespace get events '--sort-by=.lastTimestamp'
 Write-Host 'Repair: use an existing image and wait for the deployment.'
 Invoke-Checked kubectl --context $Context -n $namespace set image deployment/taskboard-broken-image backend=nginx:stable-alpine
 Invoke-Checked kubectl --context $Context -n $namespace rollout status deployment/taskboard-broken-image --timeout=5m

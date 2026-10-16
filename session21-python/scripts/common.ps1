@@ -1,8 +1,22 @@
 $ErrorActionPreference = 'Stop'
 # Refresh PATH so installs made in an Administrator shell are visible here.
-$env:PATH = @($env:PATH, [Environment]::GetEnvironmentVariable('Path', 'Machine'), [Environment]::GetEnvironmentVariable('Path', 'User')) -join ';'
+$labHelmDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) '.tools/helm/windows-amd64'
+$pathEntries = @($env:PATH, [Environment]::GetEnvironmentVariable('Path', 'Machine'), [Environment]::GetEnvironmentVariable('Path', 'User'))
+if (Test-Path (Join-Path $labHelmDirectory 'helm.exe')) { $pathEntries = @($labHelmDirectory) + $pathEntries }
+$env:PATH = ((($pathEntries -join ';') -split ';' | Where-Object { $_ } | Select-Object -Unique) -join ';')
 function Invoke-Checked {
-    param([Parameter(Mandatory=$true)][string]$Tool, [Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
-    & $Tool @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$Tool failed with exit code $LASTEXITCODE" }
+    # Keep this a simple function: advanced PowerShell parameters consume native
+    # flags such as kubectl -o as ambiguous -OutVariable/-OutBuffer parameters.
+    param([string]$Tool)
+    $Arguments = $args
+    $null = Get-Command $Tool -ErrorAction Stop
+    $previousPreference = $ErrorActionPreference
+    try {
+        # Windows PowerShell 5 treats native stderr as ErrorRecords. Let the
+        # program finish, then use its exit code instead of aborting on warnings.
+        $ErrorActionPreference = 'Continue'
+        & $Tool @Arguments
+        $toolExitCode = $LASTEXITCODE
+    } finally { $ErrorActionPreference = $previousPreference }
+    if ($toolExitCode -ne 0) { throw "$Tool failed with exit code $toolExitCode" }
 }

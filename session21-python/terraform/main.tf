@@ -41,6 +41,17 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
   enable_irsa                              = false
 
+  node_security_group_additional_rules = {
+    ingress_cluster_metrics_server = {
+      description                   = "Control plane to EKS Metrics Server"
+      protocol                      = "tcp"
+      from_port                     = 10251
+      to_port                       = 10251
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+  }
+
   cluster_addons = {
     coredns                = {}
     kube-proxy             = {}
