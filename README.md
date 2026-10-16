@@ -47,10 +47,15 @@ Use the [complete screenshot checklist](demo/SCREENSHOTS.md) for every required 
 Run `.\scripts\capture-local-evidence.ps1` to save local command output under `demo/evidence/`.
 
 See [VALIDATION.md](session21-python/VALIDATION.md) for checks performed during this update.
-Source files alone do not prove a running AWS deployment. The remote pipeline,
-GHCR packages, EKS deployment, Argo CD sync, live monitoring, and teardown still
-need evidence from a cloud run. An AWS account and configured credentials are
-prerequisites; they do not provision the infrastructure.
+The cloud run provisioned EKS, deployed the direct Helm demonstration and the
+Argo CD application, and verified Synced/Healthy status and both Prometheus
+targets UP. The [latest successful pipeline](https://github.com/Sachith77/DevOps/actions/runs/38969815778)
+built, scanned, published, and promoted SHA-tagged images. See the validation
+record for the final API, Grafana, and teardown results. Saved command output
+is in [demo/evidence](demo/evidence); required screenshots and the narrated
+video still need manual capture during a fresh deployment after cleanup.
+The AWS lab has been destroyed (69 Terraform resources); the local Compose stack
+and its data are retained. The KMS key follows its scheduled deletion window.
 
 Each command block starts from the project directory and should run in its own
 terminal when it starts a server or port forward.
@@ -143,8 +148,9 @@ Download the `trivy-reports` artifact to inspect results.
 
 On `main`, repository variable `GITOPS_AUTO_DEPLOY=true` enables a bot commit to
 [gitops/images.yaml](session21-python/gitops/images.yaml). Argo CD reads that commit and reconciles
-the chart. Enable Actions read/write repository permission for promotion; branch
-protection may require a PR or approved bot credential instead. AWS keys and
+the chart. The promotion job requests `contents: write`; repository and organization
+policies must allow that permission. Branch protection may require a PR or approved
+bot credential instead. AWS keys and
 kubeconfig secrets are not required in GitHub for this GitOps flow.
 
 The initial pipeline published both images and promoted their actual commit SHA
@@ -172,6 +178,15 @@ terraform validate
 terraform plan '-out=herodesk.tfplan'
 ```
 
+Before the cluster bootstrap, install the checksum-verified project-local Helm
+version used in CI. This preserves your system installation:
+
+```powershell
+Set-Location 'D:\devops-heros\session21-python'
+.\scripts\install-lab-tools.ps1
+.\scripts\preflight.ps1
+```
+
 Review the plan before applying. It creates **paid resources**: EKS, two m7i-flex.large
 workers, EBS, a NAT gateway, and networking. The application later creates an ALB.
 This is not a free-tier-only stack. The initial t3.medium attempt was refused by
@@ -182,7 +197,7 @@ Sydney, so workers use that type. Eligibility does not make the whole lab free.
 Set-Location 'D:\devops-heros\session21-python\terraform'
 terraform apply herodesk.tfplan
 cd ..
-.\scripts\bootstrap-eks.ps1
+.\scripts\bootstrap-eks.ps1 -InCluster
 .\scripts\create-db-secret.ps1 -Context herodesk-eks
 ```
 
@@ -195,6 +210,11 @@ The bootstrap installs the ALB controller, a gp3 StorageClass, Prometheus/Grafan
 the supplied dashboard, and Argo CD. It uses an explicit EKS context to protect
 your existing Minikube setup. Verify [AWS version support](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html)
 before future deployments.
+
+`-InCluster` runs the large Helm operations in a temporary installer Job beside
+the Kubernetes API. This avoids the intermittent local API connection failures
+observed during this lab. The installer uses a temporary administrator binding
+and removes its Job, binding, and namespace after saving its log.
 
 ## 5. Deploy through Argo CD
 
@@ -231,14 +251,16 @@ For separate direct-Helm evidence, use a disposable namespace:
 Set-Location 'D:\devops-heros\session21-python'
 kubectl --context herodesk-eks create namespace taskboard-helm-demo
 .\scripts\create-db-secret.ps1 -Context herodesk-eks -Namespace taskboard-helm-demo
-helm upgrade --install taskboard ./helm/taskboard --kube-context herodesk-eks -n taskboard-helm-demo -f ./helm/taskboard/values-prod.yaml -f ./gitops/images.yaml --wait --timeout 10m
+helm upgrade --install taskboard ./helm/taskboard --kube-context herodesk-eks -n taskboard-helm-demo -f ./helm/taskboard/values-prod.yaml -f ./gitops/images.yaml --set ingress.enabled=false --set monitoring.serviceMonitor.enabled=false --set hpa.enabled=false --wait --timeout 10m
 helm list --kube-context herodesk-eks -n taskboard-helm-demo
 ```
 
-The separate demo creates another database volume and ALB. Remove its Ingress
-and wait for the ALB to disappear, then uninstall its release and delete the demo
-namespace after collecting evidence. Back up records before uninstalling: the
-database PVC is part of the chart. Keep its Secret while its volume exists.
+The separate demo creates another database volume and runs two replicas of each
+application component. These overrides avoid a second ALB and duplicate metrics;
+the main Argo CD deployment demonstrates Ingress, monitoring, and HPA. Uninstall
+the demo release and delete its namespace after collecting evidence. Back up
+records before uninstalling: the database PVC is part of the chart. Keep its
+Secret while its volume exists.
 
 ## 6. Monitoring and autoscaling
 

@@ -1,0 +1,62 @@
+namespace/herodesk-lab created
+deployment.apps/taskboard-broken-image created
+NAME                                      READY   STATUS             RESTARTS   AGE
+taskboard-broken-image-66c668b48c-9nkm6   0/1     ImagePullBackOff   0          23s
+Name:                   taskboard-broken-image
+Namespace:              herodesk-lab
+CreationTimestamp:      Sat, 17 Oct 2026 02:52:18 +0530
+Labels:                 <none>
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=broken-image
+Replicas:               1 desired | 1 updated | 1 total | 0 available | 1 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=broken-image
+  Containers:
+   backend:
+    Image:         ghcr.io/example/taskboard-backend:does-not-exist
+    Port:          <none>
+    Host Port:     <none>
+    Environment:   <none>
+    Mounts:        <none>
+  Volumes:         <none>
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      False   MinimumReplicasUnavailable
+  Progressing    True    ReplicaSetUpdated
+OldReplicaSets:  <none>
+NewReplicaSet:   taskboard-broken-image-66c668b48c (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  29s   deployment-controller  Scaled up replica set taskboard-broken-image-66c668b48c from 0 to 1
+LAST SEEN   TYPE      REASON              OBJECT                                         MESSAGE
+32s         Normal    Scheduled           pod/taskboard-broken-image-66c668b48c-9nkm6    Successfully assigned herodesk-lab/taskboard-broken-image-66c668b48c-9nkm6 to ip-10-20-2-130.ap-southeast-2.compute.internal
+33s         Normal    SuccessfulCreate    replicaset/taskboard-broken-image-66c668b48c   Created pod: taskboard-broken-image-66c668b48c-9nkm6
+33s         Normal    ScalingReplicaSet   deployment/taskboard-broken-image              Scaled up replica set taskboard-broken-image-66c668b48c from 0 to 1
+16s         Normal    Pulling             pod/taskboard-broken-image-66c668b48c-9nkm6    Pulling image "ghcr.io/example/taskboard-backend:does-not-exist"
+16s         Warning   Failed              pod/taskboard-broken-image-66c668b48c-9nkm6    Failed to pull image "ghcr.io/example/taskboard-backend:does-not-exist": failed to pull and unpack image "ghcr.io/example/taskboard-backend:does-not-exist": failed to resolve reference "ghcr.io/example/taskboard-backend:does-not-exist": failed to authorize: failed to fetch anonymous token: unexpected status from GET request to https://ghcr.io/token?scope=repository%3Aexample%2Ftaskboard-backend%3Apull&service=ghcr.io: 403 Forbidden
+16s         Warning   Failed              pod/taskboard-broken-image-66c668b48c-9nkm6    Error: ErrImagePull
+3s          Normal    BackOff             pod/taskboard-broken-image-66c668b48c-9nkm6    Back-off pulling image "ghcr.io/example/taskboard-backend:does-not-exist"
+3s          Warning   Failed              pod/taskboard-broken-image-66c668b48c-9nkm6    Error: ImagePullBackOff
+Repair: use an existing image and wait for the deployment.
+deployment.apps/taskboard-broken-image image updated
+Waiting for deployment "taskboard-broken-image" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "taskboard-broken-image" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "taskboard-broken-image" rollout to finish: 1 old replicas are pending termination...
+deployment "taskboard-broken-image" successfully rolled out
+service/broken-service created
+NAME                                      READY   STATUS    RESTARTS   AGE   LABELS
+taskboard-broken-image-7cc5844f47-k9622   1/1     Running   0          14s   app=broken-image,pod-template-hash=7cc5844f47,topology.kubernetes.io/region=ap-southeast-2,topology.kubernetes.io/zone=ap-southeast-2b
+NAME                   ADDRESSTYPE   PORTS     ENDPOINTS   AGE
+broken-service-tmqmn   IPv4          <unset>   <unset>     5s
+Repair: align the Service selector and target port with the diagnostic Pod.
+service/broken-service configured
+NAME                   ADDRESSTYPE   PORTS   ENDPOINTS     AGE
+broken-service-tmqmn   IPv4          80      10.20.2.118   19s
+namespace "herodesk-lab" deleted

@@ -1,0 +1,16 @@
+module.eks.aws_security_group_rule.node["ingress_cluster_metrics_server"]: Creating...
+module.eks.aws_security_group_rule.node["ingress_cluster_metrics_server"]: Creation complete after 4s [id=sgrule-44342259]
+module.eks.aws_eks_addon.this["coredns"]: Modifying... [id=herodesk-eks:coredns]
+module.eks.aws_eks_addon.this["coredns"]: Still modifying... [id=herodesk-eks:coredns, 00m10s elapsed]
+module.eks.aws_eks_addon.this["coredns"]: Modifications complete after 18s [id=herodesk-eks:coredns]
+
+Apply complete! Resources: 1 added, 1 changed, 0 destroyed.
+
+Outputs:
+
+aws_region = "ap-southeast-2"
+cluster_endpoint = "https://C7FCD78B5C86D4266BC1E68AB1E719A3.gr7.ap-southeast-2.eks.amazonaws.com"
+cluster_name = "herodesk-eks"
+configure_kubectl = "aws eks update-kubeconfig --region ap-southeast-2 --name herodesk-eks"
+load_balancer_role_arn = "arn:aws:iam::AWS_ACCOUNT_ID:role/herodesk-eks-lbc"
+vpc_id = "vpc-09fd4cb6c30a3c470"

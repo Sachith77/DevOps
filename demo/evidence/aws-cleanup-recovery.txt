@@ -1,0 +1,1 @@
+Allowed termination to continue for i-0a762bdc70d7ec475 in the deleting, zero-desired lab node group; application EBS volumes were absent.

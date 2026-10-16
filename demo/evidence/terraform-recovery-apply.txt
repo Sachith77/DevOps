@@ -1,0 +1,27 @@
+module.eks.aws_iam_openid_connect_provider.oidc_provider[0]: Creating...
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Creating...
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Still creating... [00m10s elapsed]
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Still creating... [00m20s elapsed]
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Still creating... [00m30s elapsed]
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Still creating... [00m40s elapsed]
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Still creating... [00m50s elapsed]
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Still creating... [01m00s elapsed]
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Still creating... [01m10s elapsed]
+module.eks.module.eks_managed_node_group["main"].aws_eks_node_group.this[0]: Creation complete after 1m14s [id=herodesk-eks:main-20261016144802129400000001]
+terraform :
+At line:2 char:146
++ ...  -join ';'; terraform apply -input=false -no-color recovery.tfplan 2> ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+Error: creating IAM OIDC Provider: operation error IAM: CreateOpenIDConnectProvider, https response error StatusCode:
+403, RequestID: 1f3dbf7a-ebcb-4cd8-b82d-d5568665c85a, api error AccessDenied: User:
+arn:aws:iam::AWS_ACCOUNT_ID:user/Terraform1 is not authorized to perform: iam:CreateOpenIDConnectProvider on resource:
+arn:aws:iam::AWS_ACCOUNT_ID:oidc-provider/oidc.eks.ap-southeast-2.amazonaws.com/id/C7FCD78B5C86D4266BC1E68AB1E719A3 with
+an explicit deny in a service control policy:
+arn:aws:organizations::AWS_ACCOUNT_ID:policy/o-b6rx42zo45/service_control_policy/p-uhs72ul6
+
+  with module.eks.aws_iam_openid_connect_provider.oidc_provider[0],
+  on .terraform\modules\eks\main.tf line 419, in resource "aws_iam_openid_connect_provider" "oidc_provider":
+ 419: resource "aws_iam_openid_connect_provider" "oidc_provider" {

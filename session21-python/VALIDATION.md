@@ -1,60 +1,100 @@
-# Validation record - 16 October 2026
+# Validation record - 17 October 2026 (IST)
 
-These are observed local results, not a claim that the project has been deployed
-to AWS or submitted for grading.
+This records observed results, not a self-awarded grade. Cloud checks ran on
+16 October UTC / 17 October IST. The user requested AWS destruction after
+validation. Logs are saved in [demo/evidence](../demo/evidence).
 
-| Check | Result |
-| --- | --- |
-| AWS CLI authentication | Succeeded using the existing local configuration; no keys printed or copied |
-| AWS region | ap-southeast-2 |
-| Existing EKS clusters in that region | None at the time of inspection |
-| Tool discovery | Docker, AWS CLI, Terraform, Helm, kubectl, and Git found |
-| Frontend dependencies | npm lockfile created; npm audit reported zero findings |
-| Frontend production build | Passed |
-| Backend tests with updated dependencies | 25 passed in Python 3.12; isolated SQLite per test |
-| Docker Compose | PostgreSQL healthy; backend and frontend running |
-| PostgreSQL migration | Applied 0001 -> 0002; four existing records preserved |
-| API readiness | GET /ready returned READY |
-| Frontend API proxy | GET localhost:3000/api/tickets/stats returned database counts |
-| Live API integration | Create/update/filter/delete passed through Nginx against PostgreSQL; temporary ticket removed |
-| Backend container identity | UID 10001, non-root |
-| Frontend container identity | UID 101, non-root |
-| Trivy backend image | Zero fixable HIGH/CRITICAL findings |
-| Trivy frontend image | Zero fixable HIGH/CRITICAL findings |
-| Helm lint | Passed with --strict |
-| Production Helm render | Parsed successfully; both Ingress service ports resolve |
-| Argo CD values paths | Both value files resolve within the repository |
-| Bootstrap dependencies | Pinned ALB controller, Prometheus stack, and Argo CD charts rendered and parsed; IAM role annotation verified |
-| Grafana dashboard | ConfigMap and JSON parsed; three panels present |
-| PowerShell scripts | Parsed without syntax errors; preflight executed successfully |
-| GitHub workflow | actionlint passed, including shellcheck |
-| Terraform init | Succeeded; provider lockfile retained for commit |
-| Terraform validate | Succeeded |
-| Terraform plan | 67 to add, 0 to change, 0 to destroy in Sydney |
+| Rubric area | Observed result | Remaining submission evidence |
+| --- | --- | --- |
+| M1 Application | Local PostgreSQL-backed CRUD and ALB-backed ticket create/read/update/filter/delete passed; frontend returned HTTP 200 | Browser and responsive-layout screenshots; visual UI walkthrough |
+| M2 Testing | 25 isolated SQLite tests passed locally and in GitHub Actions | Test output screenshot |
+| M3 Git/GitHub | Public Sachith77/DevOps repository; meaningful commit history and ignore rules | Commit history screenshot and submission form |
+| M4 Docker | Both images built; Compose running; backend UID 10001 and frontend UID 101; PostgreSQL healthy | Compose, non-root, and browser screenshots |
+| M5 CI/CD | Real Actions run passed tests/build/scan/push/promotion; public GHCR images use commit SHA tags | Actions and registry screenshots |
+| M6 Security | Trivy gate passed for both images with zero fixable HIGH/CRITICAL findings | Scan screenshots; reports retained in evidence/trivy |
+| M7 Terraform | VPC with two public and two private subnets, NAT, EKS, managed node group and add-ons provisioned; two workers Ready | AWS Console, plan, and destruction screenshots |
+| M8 Kubernetes/Helm | Direct Helm release deployed; main Argo application Synced/Healthy; two ready backend and two ready frontend Pods; ClusterIP Services; gp3 PVC Bound; public ALB API verified | Helm, Argo, Kubernetes and Ingress browser screenshots |
+| M9 Observability | Both backend Prometheus targets UP; authenticated Grafana API loaded all three dashboard panels and returned live values through its Prometheus datasource | Prometheus Targets and populated Grafana browser screenshots |
+| M10 Presentation/docs | Root README and project runbook supplied; editable 11-slide presentation committed | Mandatory real narrated video and manual screenshots are still missing |
 
-Trivy uses HIGH/CRITICAL severity and ignores unfixed findings, matching the
-reference policy. An initial unrestricted backend scan did find unfixed OS
-vulnerabilities. A passing gate does not imply an entirely vulnerability-free
-image. Reports are retained in ignored `artifacts/` files; CI uploads reports as
-workflow artifacts.
+The successfully deployed images were tagged
+`0623f167c0c6eb954176d9065e3218d7e4324d15`. Their complete
+[Actions run](https://github.com/Sachith77/DevOps/actions/runs/38968758149)
+succeeded, including the GitOps promotion job. The live Application reconciled
+the resulting bot commit `4276d5738c483465ba6d69360865508aa6733e67`.
+A later command-helper fix passed the complete
+[final workflow](https://github.com/Sachith77/DevOps/actions/runs/38969815778).
+Its public images are tagged `b21a790fd3d04571757db77036f01f08f66d79bb` and were
+promoted by bot commit `56a99a3`. Those later tags were not redeployed during
+teardown. Consult gitops/images.yaml when redeploying.
 
-There is one test-client deprecation warning about Starlette's httpx integration.
-It does not fail the suite.
+## Local and static checks
 
-A PostgreSQL backup from before migration is retained outside the repository at
-`%TEMP%/herodesk-before-migration.sql`.
+- Frontend production build and npm audit passed; a dependency lockfile is present.
+- Alembic migrated the existing database from 0001 to 0002 while preserving four
+  existing records. Readiness and the frontend API proxy passed again after
+  restarting the local stack on 17 October.
+- Helm strict lint, production rendering, Terraform init/validate/plan, actionlint
+  with shellcheck, and PowerShell syntax parsing passed.
+- The common PowerShell helper was exercised with kubectl `-o`, comma-separated
+  resource lists, Helm, Terraform, and Docker. It checks native exit codes and
+  tolerates informational stderr in Windows PowerShell 5.1.
+- The presentation was rendered and visually reviewed. This is separate from a
+  visual review of the running application, which was not available.
+- The local load-test script completed 1,000 requests. All 24 PowerShell blocks
+  across the project and root README parsed successfully. A targeted Git history
+  check found no AWS key IDs, GitHub tokens, or private-key headers in added lines.
 
-## Checks requiring a later run
+Trivy excludes unfixed findings, matching the reference gate. An unrestricted
+scan found unfixed OS vulnerabilities; a passing gate does not mean an image is
+free of all vulnerabilities. There is one non-failing Starlette/httpx test-client
+deprecation warning.
 
-- The browser automation service was unavailable; no browser UI walkthrough or
-  updated screenshot is claimed. Open http://localhost:3000 to inspect HeroDesk.
-- The selected Minikube context refused its API connection. No existing local
-  cluster workloads were changed.
-- Cloud validation is now in progress following the user's request. Terraform
-  apply is creating the lab; GitHub delivery and EKS bootstrap results will be
-  recorded after completion. The user requested destruction after validation.
-- The 11-slide presentation is in repository-root demo/. A real narrated video
-  and the manual captures listed in demo/SCREENSHOTS.md are still required.
+## Real cloud checks and repairs
 
-The saved local Terraform plan is ignored. Review it again before applying if
-configuration or AWS state changes.
+- Two `m7i-flex.large` private workers ran in Sydney (`ap-southeast-2`). The initial
+  `t3.medium` attempt was refused by this account's instance eligibility rules;
+  the failed, empty node group was removed.
+- The organization denies IAM OIDC provider creation. Workload roles use EKS Pod
+  Identity, with trust scoped to the required service accounts. No organization
+  policy was changed. EBS CSI provisioned real application volumes successfully.
+- Added control-plane access to Metrics Server TCP 10251 from the cluster security
+  group. Its API became Available, HPA CPU became readable, and namespace cleanup
+  worked. HPA stayed at two replicas during validation; scale-out was not observed.
+- Large Helm operations ran in a temporary in-cluster Job after intermittent
+  workstation API failures. Its Job, namespace, and administrator binding were
+  removed. Monitoring, Argo CD, and ALB controller Helm releases were deployed.
+- The ALB frontend returned HTTP 200; API create/read/update/status-and-category
+  filtering/delete/404 checks passed through the public Ingress. The synthetic
+  verification ticket was deleted.
+- Prometheus scraped both backend replicas. Grafana authenticated successfully,
+  its datasource health was OK, and all three panels returned live data: requests
+  approximately 0.711/s, errors 0/s, average duration approximately 0.001669s at the
+  recorded sample. These values are samples, not load-test performance guarantees.
+- The isolated troubleshooting exercise demonstrated an image pull failure,
+  repaired the image, diagnosed an empty Service EndpointSlice, and repaired its
+  selector and target port. The diagnostic namespace was deleted.
+
+## Cleanup and remaining work
+
+Terraform destruction completed successfully: **69 resources destroyed**. EKS
+lists no clusters in Sydney. The lab KMS key is `PendingDeletion`, scheduled for
+16 November 2026 under AWS's deletion window. Final resource checks are saved in
+`demo/evidence/aws-cleanup-verification.json`; destruction output is in
+`demo/evidence/terraform-destroy.txt`. One worker's termination
+lifecycle was allowed to continue after confirming zero desired workers and no
+application EBS volumes. Local Compose data is retained.
+
+Browser automation had no connected browser or application session. No new UI,
+AWS Console, Argo, Prometheus, or Grafana screenshot is claimed. Use
+[SCREENSHOTS.md](../demo/SCREENSHOTS.md) for the complete 30-capture checklist.
+Command logs are useful evidence but do not replace required screenshots.
+
+The rubric also requires a real narrated video presenting the slides and a live
+walkthrough. No video has been created. After AWS cleanup, cloud screenshots and
+the live video require a fresh deployment and capture before its teardown.
+This submission is not complete until those manual artifacts are added.
+
+AWS credentials, generated passwords, Terraform state and plans, and local tool
+files remain outside version control. The pre-migration PostgreSQL backup remains
+outside the repository at `%TEMP%/herodesk-before-migration.sql`.

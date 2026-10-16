@@ -1,0 +1,6 @@
+NAME                                  CPU(cores)   MEMORY(bytes)
+taskboard-backend-845c6458f-jzn8t     3m           64Mi
+taskboard-backend-845c6458f-smb2b     2m           64Mi
+taskboard-frontend-85947455d5-47pbt   1m           3Mi
+taskboard-frontend-85947455d5-4fv4l   1m           3Mi
+taskboard-postgres-75759449c4-hr4q8   2m           38Mi

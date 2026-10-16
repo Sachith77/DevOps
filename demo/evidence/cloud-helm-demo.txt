@@ -1,0 +1,8 @@
+Release "taskboard" does not exist. Installing it now.
+NAME: taskboard
+LAST DEPLOYED: Fri Oct 16 20:30:41 2026
+NAMESPACE: taskboard-helm-demo
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None

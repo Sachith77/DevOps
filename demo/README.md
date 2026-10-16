@@ -13,7 +13,11 @@ then show code, CI, security reports, GHCR SHA tags, Terraform and AWS, Argo CD
 Synced/Healthy, Kubernetes workloads and Ingress, Prometheus Targets UP, and
 populated Grafana panels. Show a disposable troubleshooting exercise and cleanup.
 
-Cloud resources are scheduled for teardown at the user's request after validation.
-Use the saved validation output to distinguish completed work from screenshots
-that still require a new live deployment. Do not invent a screenshot of a run
-that has already been destroyed.
+The AWS lab was destroyed after validation at the user's request: Terraform
+reported 69 resources destroyed. The KMS key is scheduled for deletion on
+16 November 2026. See [the validation record](../session21-python/VALIDATION.md)
+and [cleanup checks](evidence/aws-cleanup-verification.json).
+
+Cloud screenshots and the live narrated walkthrough require a new deployment.
+Capture them before running cleanup again. Use saved output as supporting
+evidence; do not represent logs as screenshots of the destroyed deployment.

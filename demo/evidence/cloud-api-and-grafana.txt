@@ -1,0 +1,17 @@
+ALB frontend HTTP 200: http://k8s-taskboar-taskboar-78778a7b39-1683723146.ap-southeast-2.elb.amazonaws.com
+Ingress API: create, read, update, status/category filter passed.
+Ingress API: delete and subsequent 404 passed; temporary ticket removed.
+
+health scrapeUrl                       lastError
+------ ---------                       ---------
+up     http://10.20.2.125:8000/metrics
+up     http://10.20.1.86:8000/metrics
+
+
+
+Grafana authenticated API: loaded 'HeroDesk - Support API' with 3 panels.
+Grafana Prometheus datasource: OK - Successfully queried the Prometheus API.
+Panel 'API requests per second': live value 0.711111111111111
+Panel 'Server errors per second': live value 0
+Panel 'Average request duration (seconds)': live value 0.001668726801847844
+Browser layout and screenshots were not checked by this API validation.

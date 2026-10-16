@@ -1,0 +1,20 @@
+NAME                                      READY   STATUS    RESTARTS   AGE     IP            NODE                                             NOMINATED NODE   READINESS GATES
+pod/taskboard-backend-845c6458f-jzn8t     1/1     Running   0          2m29s   10.20.1.86    ip-10-20-1-15.ap-southeast-2.compute.internal    <none>           <none>
+pod/taskboard-backend-845c6458f-smb2b     1/1     Running   0          2m44s   10.20.2.125   ip-10-20-2-130.ap-southeast-2.compute.internal   <none>           <none>
+pod/taskboard-frontend-85947455d5-47pbt   1/1     Running   0          2m44s   10.20.2.217   ip-10-20-2-130.ap-southeast-2.compute.internal   <none>           <none>
+pod/taskboard-frontend-85947455d5-4fv4l   1/1     Running   0          2m44s   10.20.1.156   ip-10-20-1-15.ap-southeast-2.compute.internal    <none>           <none>
+pod/taskboard-postgres-75759449c4-hr4q8   1/1     Running   0          2m44s   10.20.2.252   ip-10-20-2-130.ap-southeast-2.compute.internal   <none>           <none>
+
+NAME                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE     SELECTOR
+service/taskboard-backend    ClusterIP   172.20.105.240   <none>        8000/TCP   2m46s   app=taskboard-backend
+service/taskboard-frontend   ClusterIP   172.20.213.172   <none>        80/TCP     2m46s   app=taskboard-frontend
+service/taskboard-postgres   ClusterIP   172.20.163.233   <none>        5432/TCP   2m46s   app=taskboard-postgres
+
+NAME                                  CLASS   HOSTS   ADDRESS                                                                        PORTS   AGE
+ingress.networking.k8s.io/taskboard   alb     *       k8s-taskboar-taskboar-78778a7b39-1683723146.ap-southeast-2.elb.amazonaws.com   80      2m45s
+
+NAME                                                    REFERENCE                      TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/taskboard-backend   Deployment/taskboard-backend   cpu: 3%/60%   2         6         2          2m46s
+
+NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE     VOLUMEMODE
+persistentvolumeclaim/taskboard-postgres-data   Bound    pvc-d2f7d1b3-f2b7-42b8-8ad0-63706ae1c4ef   5Gi        RWO            gp3            <unset>                 2m47s   Filesystem
