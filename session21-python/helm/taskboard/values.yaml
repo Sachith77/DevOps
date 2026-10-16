@@ -1,10 +1,10 @@
 # Keep the original chart/release name to minimize migration work.
 frontend:
   image: ghcr.io/sachith77/herodesk-frontend
-  tag: SET_IMAGE_SHA
+  tag: 47cbfbd85564a32fa3a5f861309895ec8dc980db
 backend:
   image: ghcr.io/sachith77/herodesk-backend
-  tag: SET_IMAGE_SHA
+  tag: 47cbfbd85564a32fa3a5f861309895ec8dc980db
 replicaCount: 2
 imagePullPolicy: IfNotPresent
 imagePullSecrets: []

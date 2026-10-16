@@ -2,5 +2,6 @@ aws_region         = "ap-southeast-2"
 cluster_name       = "herodesk-eks"
 environment        = "dev"
 kubernetes_version = "1.35"
+worker_instance_types = ["m7i-flex.large"]
 # Optional: replace with your public IP, retaining /32.
 # api_allowed_cidrs = ["203.0.113.10/32"]

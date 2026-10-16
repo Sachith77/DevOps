@@ -14,6 +14,12 @@ variable "environment" {
   default = "dev"
 }
 
+variable "worker_instance_types" {
+  description = "x86_64 worker types. m7i-flex.large is eligible under this account's Free Tier restrictions and provides 8 GiB for monitoring/GitOps. This does not make EKS/NAT free."
+  type        = list(string)
+  default     = ["m7i-flex.large"]
+}
+
 variable "kubernetes_version" {
   description = "EKS version; verify standard support before creating the cluster."
   type        = string

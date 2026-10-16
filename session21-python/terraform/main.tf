@@ -39,14 +39,18 @@ module "eks" {
   cluster_endpoint_private_access          = true
   cluster_endpoint_public_access_cidrs     = var.api_allowed_cidrs
   enable_cluster_creator_admin_permissions = true
-  enable_irsa                              = true
+  enable_irsa                              = false
 
   cluster_addons = {
-    coredns    = {}
-    kube-proxy = {}
-    vpc-cni    = { before_compute = true }
+    coredns                = {}
+    kube-proxy             = {}
+    vpc-cni                = { before_compute = true }
+    eks-pod-identity-agent = {}
     aws-ebs-csi-driver = {
-      service_account_role_arn = aws_iam_role.workload["ebs"].arn
+      pod_identity_association = [{
+        role_arn        = aws_iam_role.workload["ebs"].arn
+        service_account = "ebs-csi-controller-sa"
+      }]
     }
     metrics-server = {}
   }
@@ -54,7 +58,7 @@ module "eks" {
   eks_managed_node_groups = {
     main = {
       ami_type       = "AL2023_x86_64_STANDARD"
-      instance_types = ["t3.medium"]
+      instance_types = var.worker_instance_types
       min_size       = 2
       max_size       = 4
       desired_size   = 2
@@ -66,29 +70,28 @@ module "eks" {
 
 locals {
   service_accounts = {
-    ebs = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
-    lbc = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+    ebs = "ebs-csi-controller-sa"
+    lbc = "aws-load-balancer-controller"
   }
-  oidc_issuer = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
 }
 
 data "aws_iam_policy_document" "workload_trust" {
   for_each = local.service_accounts
   statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
+    actions = ["sts:AssumeRole", "sts:TagSession"]
     principals {
-      type        = "Federated"
-      identifiers = [module.eks.oidc_provider_arn]
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
     }
     condition {
       test     = "StringEquals"
-      variable = "${local.oidc_issuer}:sub"
+      variable = "aws:RequestTag/kubernetes-namespace"
+      values   = ["kube-system"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestTag/kubernetes-service-account"
       values   = [each.value]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "${local.oidc_issuer}:aud"
-      values   = ["sts.amazonaws.com"]
     }
   }
 }
@@ -115,4 +118,12 @@ resource "aws_iam_policy" "load_balancer" {
 resource "aws_iam_role_policy_attachment" "load_balancer" {
   role       = aws_iam_role.workload["lbc"].name
   policy_arn = aws_iam_policy.load_balancer.arn
+}
+
+resource "aws_eks_pod_identity_association" "load_balancer" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "kube-system"
+  service_account = local.service_accounts.lbc
+  role_arn        = aws_iam_role.workload["lbc"].arn
+  depends_on      = [aws_iam_role_policy_attachment.load_balancer]
 }

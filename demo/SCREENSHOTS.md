@@ -46,7 +46,7 @@ will no longer exist; saved evidence logs remain in `demo/evidence/`.
 | 21-helm-release.png | helm list --kube-context herodesk-eks -n taskboard-helm-demo | Direct Helm demo release deployed |
 | 22-argocd.png | https://localhost:8443 after port forwarding | herodesk Synced and Healthy, desired Git revision |
 | 23-aws-application.png | ALB hostname in browser | HeroDesk works through AWS Ingress, not localhost |
-| 24-metrics.png | Port-forward backend to 8001, then open localhost:8001/metrics | Prometheus-formatted application metrics |
+| 24-metrics.png | kubectl --context herodesk-eks -n taskboard port-forward svc/taskboard-backend 8001:8000; then open localhost:8001/metrics | Prometheus-formatted application metrics |
 | 25-prometheus-target.png | http://localhost:9090/targets | taskboard backend target UP |
 | 26-grafana.png | http://localhost:3001 > HeroDesk - Support API | Populated live request/latency panels and time range |
 | 27-hpa.png | kubectl --context herodesk-eks -n taskboard get hpa; kubectl --context herodesk-eks -n taskboard top pods | CPU readings and current/desired replicas; only claim scaling if observed |

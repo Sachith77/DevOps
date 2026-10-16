@@ -4,9 +4,11 @@ Follow [the project setup](../README.md#4-provision-aws) from PowerShell. Creden
 come from your existing AWS CLI profile or environment. Never add keys to HCL,
 tfvars, or Git.
 
-Defaults: Sydney (`ap-southeast-2`), `herodesk-eks`, EKS 1.35, two private t3.medium
+Defaults: Sydney (`ap-southeast-2`), `herodesk-eks`, EKS 1.35, two private m7i-flex.large
 workers, two public/private subnet pairs, and one NAT gateway. EBS CSI and Metrics
 Server add-ons and workload IAM roles support persistence, HPA, and ALB routing.
+EBS CSI and ALB use EKS Pod Identity because this account policy denies IAM OIDC
+providers. No organization policy is modified.
 The controller IAM policy is pinned to upstream v2.14.1 / Helm chart 1.14.0.
 
 ```powershell

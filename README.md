@@ -147,8 +147,10 @@ the chart. Enable Actions read/write repository permission for promotion; branch
 protection may require a PR or approved bot credential instead. AWS keys and
 kubeconfig secrets are not required in GitHub for this GitOps flow.
 
-For first deployment, replace **both** `SET_IMAGE_SHA` tags in `gitops/images.yaml`
-with a successfully published commit SHA and commit the values to `main`. Make
+The initial pipeline published both images and promoted their actual commit SHA
+to `gitops/images.yaml`. For a later manual promotion, run
+`.\scripts\promote-images.ps1 -ImageSha <PUBLISHED_40_CHARACTER_SHA>`, then commit
+and push the changed values to `main`. Automatic promotion handles normal pushes. Make
 both GHCR packages public, or create a Kubernetes `ghcr-pull` registry Secret with
 a read:packages token and set `imagePullSecrets: [{name: ghcr-pull}]` in chart values.
 Never commit the token or Secret.
@@ -170,9 +172,11 @@ terraform validate
 terraform plan '-out=herodesk.tfplan'
 ```
 
-Review the plan before applying. It creates **paid resources**: EKS, two t3.medium
+Review the plan before applying. It creates **paid resources**: EKS, two m7i-flex.large
 workers, EBS, a NAT gateway, and networking. The application later creates an ALB.
-This is not a free-tier-only stack.
+This is not a free-tier-only stack. The initial t3.medium attempt was refused by
+this account's Free Tier restrictions. AWS reports m7i-flex.large as eligible in
+Sydney, so workers use that type. Eligibility does not make the whole lab free.
 
 ```powershell
 Set-Location 'D:\devops-heros\session21-python\terraform'
@@ -183,7 +187,10 @@ cd ..
 ```
 
 Terraform defines two AZs with public/private subnets, private workers, EKS 1.35,
-CoreDNS, kube-proxy, VPC CNI, EBS CSI, Metrics Server, and workload IAM roles.
+CoreDNS, kube-proxy, VPC CNI, EBS CSI, Metrics Server, the EKS Pod Identity agent,
+and workload IAM roles. The account organization policy denies IAM OIDC provider
+creation, so EBS CSI and the ALB controller use supported EKS Pod Identity
+associations with service-account-scoped roles instead of IRSA.
 The bootstrap installs the ALB controller, a gp3 StorageClass, Prometheus/Grafana,
 the supplied dashboard, and Argo CD. It uses an explicit EKS context to protect
 your existing Minikube setup. Verify [AWS version support](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html)
@@ -263,7 +270,8 @@ HPA scales Pods, not EC2 nodes.
 ## 7. Troubleshooting and cleanup
 
 Use the deliberately broken manifests in `troubleshooting/` in a disposable
-namespace. Inspect Pod events for ImagePullBackOff, and Service selectors and
+namespace. Run `.\scripts\troubleshooting-lab.ps1 -Context herodesk-eks` to
+exercise and repair both failures without touching the application. Inspect Pod events for ImagePullBackOff, and Service selectors and
 EndpointSlices for empty endpoints. The [demo guide](demo/README.md) lists evidence.
 
 | Symptom | Check |

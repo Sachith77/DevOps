@@ -1,3 +1,5 @@
+bbe339e deploy: promote HeroDesk 47cbfbd85564a32fa3a5f861309895ec8dc980db [skip ci]
+47cbfbd feat(capstone): deliver HeroDesk GitOps deployment and submission runbook
 c749346 fix(ci): fix Trivy action version tag to v0.36.0 and enforce lowercase GHCR owner
 256dcd4 feat(capstone): complete Session 21 DevOps HeroBoard for Sachith Reddy (100/100 points rubric)
 2f69a61 docs: update LAST_PROJECT_ASSIGNMENTS.md with imported sessions 13-21 info
