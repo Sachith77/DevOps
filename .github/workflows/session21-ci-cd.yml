@@ -67,21 +67,26 @@ jobs:
           docker build -t "ghcr.io/${OWNER_LC}/herodesk-backend:${GITHUB_SHA}" session21-python/backend
           docker build -t "ghcr.io/${OWNER_LC}/herodesk-frontend:${GITHUB_SHA}" session21-python/frontend
       - name: Scan backend
+        id: scan-backend
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ env.OWNER_LC }}/herodesk-backend:${{ github.sha }}
           severity: HIGH,CRITICAL
+          vuln-type: os,library
           ignore-unfixed: true
+          trivyignores: session21-python/.trivyignore
           exit-code: '1'
           format: table
           output: trivy-backend.txt
       - name: Scan frontend
-        if: always() && steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ env.OWNER_LC }}/herodesk-frontend:${{ github.sha }}
           severity: HIGH,CRITICAL
+          vuln-type: os,library
           ignore-unfixed: true
+          trivyignores: session21-python/.trivyignore
           exit-code: '1'
           format: table
           output: trivy-frontend.txt

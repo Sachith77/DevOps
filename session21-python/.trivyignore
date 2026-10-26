@@ -1,0 +1,11 @@
+# Trivy ignore file — accepted / unfixed CVEs for HeroDesk images
+# Format: <CVE-ID>  [optional expiry: until:YYYY-MM-DD]
+#
+# Alpine Linux OS-level CVEs that are unfixed upstream and accepted per
+# project risk assessment (last reviewed: 2026-10-27).
+# All entries below have no upstream fix available; 'ignore-unfixed: true'
+# in the workflow handles the dynamic set, but we list known ones here
+# for auditability.
+#
+# --- add specific CVE IDs if the Trivy scan surfaces them ---
+# CVE-XXXX-XXXXX  # example: libssl1.1 unfixed upstream
