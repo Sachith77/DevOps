@@ -1,6 +1,6 @@
 backend:
   image: ghcr.io/sachith77/herodesk-backend
-  tag: '6c2f03a9996ece0dd24b6551c8315d4466a7c471'
+  tag: 'e8cdecd37b74a6c013502b01f179508f84ccd31f'
 frontend:
   image: ghcr.io/sachith77/herodesk-frontend
-  tag: '6c2f03a9996ece0dd24b6551c8315d4466a7c471'
+  tag: 'e8cdecd37b74a6c013502b01f179508f84ccd31f'
