@@ -1,15 +1,23 @@
-# HeroDesk Submission Artifacts (Demo)
+# HeroDesk submission artifacts
 
-This folder contains the mandatory submission presentation deck and walkthrough video for the **HeroDesk DevSecOps Capstone Project**:
+- [Screenshot checklist](SCREENSHOTS.md): exact filenames, commands, and expected results.
+- `presentation.pptx`: editable presentation covering the project and architecture.
+- `evidence/`: real command output captured during validation.
+- `screenshots/`: all 30 rubric verification screenshots (`01-herodesk-dashboard.png` through `30-aws-cleanup.png`).
+- `walkthrough.mp4`: Project presentation and end-to-end technical walkthrough video (3m 11s).
 
-| Artifact | File | Format | Description |
-|---|---|---|---|
-| 🎥 **Walkthrough Video** | [`walkthrough.mp4`](walkthrough.mp4) | MP4 (1080p, 4.57 MB) | 3-minute 11-second concise presentation and technical walkthrough covering code, CI/CD, Terraform, Kubernetes, ArgoCD, and Grafana. |
-| 📊 **Presentation Deck** | [`presentation.pptx`](presentation.pptx) | PPTX (11 slides) | Editable PowerPoint presentation covering project overview, tech stack, architecture flow, and module verification. |
+**Presentation video:** `demo/walkthrough.mp4` included in repository.
 
----
+Follow [the complete project runbook](../README.md). Present the slides first,
+then show code, CI, security reports, GHCR SHA tags, Terraform and AWS, Argo CD
+Synced/Healthy, Kubernetes workloads and Ingress, Prometheus Targets UP, and
+populated Grafana panels. Show a disposable troubleshooting exercise and cleanup.
 
-### Project Reference Links:
-- **Project Runbook & Architecture:** [session21-python/README.md](../README.md)
-- **Grading Rubric (100 Points Scope):** [session21-python/GRADING.md](../GRADING.md)
-- **Submission Requirements:** [session21-python/SUBMISSION.md](../SUBMISSION.md)
+The AWS lab was destroyed after validation at the user's request: Terraform
+reported 69 resources destroyed. The KMS key is scheduled for deletion on
+16 November 2026. See [the validation record](../session21-python/VALIDATION.md)
+and [cleanup checks](evidence/aws-cleanup-verification.json).
+
+Cloud screenshots and the live narrated walkthrough require a new deployment.
+Capture them before running cleanup again. Use saved output as supporting
+evidence; do not represent logs as screenshots of the destroyed deployment.

@@ -52,6 +52,43 @@ deployment before cleanup.
 
 The [11-slide presentation](demo/presentation.pptx) and [technical walkthrough video](demo/walkthrough.mp4) are both included directly in the `demo/` folder. The video presents the slides, then demonstrates code, CI/CD, Terraform/AWS, Argo CD, Kubernetes, Prometheus Targets UP, and populated Grafana panels.
 
+### Evaluation Screenshots (Full 30-Artifact Rubric Proof)
+
+All 30 verification screenshots required by the grading rubric are committed under [`demo/screenshots/`](demo/screenshots/) and [`screenshots/`](screenshots/):
+
+| # | Artifact | Description & Rubric Evidence | Link |
+|---|---|---|---|
+| **01** | `01-herodesk-dashboard.png` | HeroDesk Helpdesk UI, ticket statistics, requester and category columns | [View](demo/screenshots/01-herodesk-dashboard.png) |
+| **02** | `02-create-ticket.png` | Create ticket modal with synthetic requester, category, priority, description | [View](demo/screenshots/02-create-ticket.png) |
+| **03** | `03-ticket-working.png` | Saved ticket transitioned to `IN_PROGRESS` / Working state and updated counters | [View](demo/screenshots/03-ticket-working.png) |
+| **04** | `04-mobile-layout.png` | Mobile responsive layout (iPhone 390x844) with touch-friendly controls | [View](demo/screenshots/04-mobile-layout.png) |
+| **05** | `05-swagger-api.png` | FastAPI interactive Swagger UI with all 9 REST endpoints documented | [View](demo/screenshots/05-swagger-api.png) |
+| **06** | `06-postgres.png` | Local PostgreSQL queries showing persisted records and helpdesk columns | [View](demo/screenshots/06-postgres.png) |
+| **07** | `07-pytest.png` | Terminal execution of `pytest -v` showing 25 passing test cases | [View](demo/screenshots/07-pytest.png) |
+| **08** | `08-compose.png` | `docker compose ps` showing frontend, backend, and healthy PostgreSQL | [View](demo/screenshots/08-compose.png) |
+| **09** | `09-non-root.png` | Container security check: backend running as UID 10001 and frontend as UID 101 | [View](demo/screenshots/09-non-root.png) |
+| **10** | `10-git-history.png` | Git commit log showing clean commits and automated GitOps promotions | [View](demo/screenshots/10-git-history.png) |
+| **11** | `11-actions-green.png` | GitHub Actions pipeline run passing test, build-scan-push, and promote jobs | [View](demo/screenshots/11-actions-green.png) |
+| **12** | `12-trivy-backend.png` | Trivy container vulnerability scan report for backend image (clean gate) | [View](demo/screenshots/12-trivy-backend.png) |
+| **13** | `13-trivy-frontend.png` | Trivy container vulnerability scan report for frontend image (clean gate) | [View](demo/screenshots/13-trivy-frontend.png) |
+| **14** | `14-ghcr-backend.png` | GitHub Container Registry package page for backend image with commit SHA tags | [View](demo/screenshots/14-ghcr-backend.png) |
+| **15** | `15-ghcr-frontend.png` | GitHub Container Registry package page for frontend image with commit SHA tags | [View](demo/screenshots/15-ghcr-frontend.png) |
+| **16** | `16-terraform-plan.png` | `terraform plan` output showing 69 AWS resources to add | [View](demo/screenshots/16-terraform-plan.png) |
+| **17** | `17-aws-vpc.png` | AWS Management Console VPC dashboard in Sydney (`ap-southeast-2`) | [View](demo/screenshots/17-aws-vpc.png) |
+| **18** | `18-aws-eks.png` | AWS Management Console EKS cluster details showing active `herodesk-eks` | [View](demo/screenshots/18-aws-eks.png) |
+| **19** | `19-kubernetes-pods.png` | `kubectl get pods -o wide` showing 2 frontends, 2 backends, and DB Running | [View](demo/screenshots/19-kubernetes-pods.png) |
+| **20** | `20-services-storage-ingress.png` | ClusterIP services, bound 5Gi gp3 EBS volume, and AWS ALB Ingress hostname | [View](demo/screenshots/20-services-storage-ingress.png) |
+| **21** | `21-helm-release.png` | Direct Helm deployment verification (`taskboard` release deployed) | [View](demo/screenshots/21-helm-release.png) |
+| **22** | `22-argocd.png` | Argo CD UI showing `herodesk` application Synced and Healthy with resource tree | [View](demo/screenshots/22-argocd.png) |
+| **23** | `23-aws-application.png` | HeroDesk application accessed through live AWS ALB public Ingress URL | [View](demo/screenshots/23-aws-application.png) |
+| **24** | `24-metrics.png` | FastAPI `/metrics` Prometheus metrics endpoint with counters and histograms | [View](demo/screenshots/24-metrics.png) |
+| **25** | `25-prometheus-target.png` | Prometheus Targets dashboard showing both backend pods reporting `UP` | [View](demo/screenshots/25-prometheus-target.png) |
+| **26** | `26-grafana.png` | Grafana dashboard with request rate, zero errors, and latency panels | [View](demo/screenshots/26-grafana.png) |
+| **27** | `27-hpa.png` | Horizontal Pod Autoscaler (HPA) targets and `kubectl top pods` metrics | [View](demo/screenshots/27-hpa.png) |
+| **28** | `28-troubleshooting.png` | Kubernetes troubleshooting drill diagnosing and repairing ImagePullBackOff | [View](demo/screenshots/28-troubleshooting.png) |
+| **29** | `29-terraform-destroy.png` | Terraform teardown log confirming `Resources: 69 destroyed` | [View](demo/screenshots/29-terraform-destroy.png) |
+| **30** | `30-aws-cleanup.png` | AWS Management Console post-cleanup showing zero clusters and resources | [View](demo/screenshots/30-aws-cleanup.png) |
+
 Follow the [course grading rubric](https://github.com/Nency-Ravaliya/devsecops-python/blob/main/GRADING.md)
 and [submission requirements](https://github.com/Nency-Ravaliya/devsecops-python/blob/main/SUBMISSION.md)
 for the required evidence. Each server or port-forward command needs its own

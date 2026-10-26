@@ -24,7 +24,6 @@ artifacts/
 *.tfstate
 *.tfstate.*
 
-# Local reference copies, planning notes, and historical screenshots
+# Local reference copies, planning notes
 /VALIDATION.md
 /REFERENCE.md
-/screenshots/
