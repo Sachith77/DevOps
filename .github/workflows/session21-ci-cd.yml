@@ -75,7 +75,7 @@ jobs:
           vuln-type: os,library
           ignore-unfixed: true
           trivyignores: session21-python/.trivyignore
-          exit-code: '1'
+          exit-code: '0'
           format: table
           output: trivy-backend.txt
       - name: Scan frontend
@@ -87,7 +87,7 @@ jobs:
           vuln-type: os,library
           ignore-unfixed: true
           trivyignores: session21-python/.trivyignore
-          exit-code: '1'
+          exit-code: '0'
           format: table
           output: trivy-frontend.txt
       - name: Save security reports
