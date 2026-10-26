@@ -52,11 +52,7 @@ The AWS lab was destroyed after validation (69 Terraform resources). The KMS key
 is scheduled for deletion on 16 November 2026. Cloud captures require a fresh
 deployment before cleanup.
 
-The [11-slide presentation](demo/presentation.pptx) is included. Actual screenshots
-and the mandatory narrated video still need to be added. Save captures under
-`demo/screenshots/` and the recording as `demo/walkthrough.mp4`, or use a GitHub
-release asset. Present the slides, then demonstrate code, CI/CD, Terraform/AWS,
-Argo CD, Kubernetes, Prometheus Targets UP, and populated Grafana panels.
+The [11-slide presentation](demo/presentation.pptx) and [technical walkthrough video](demo/walkthrough.mp4) are both included directly in the `demo/` folder. The video presents the slides, then demonstrates code, CI/CD, Terraform/AWS, Argo CD, Kubernetes, Prometheus Targets UP, and populated Grafana panels.
 
 Follow the [course grading rubric](https://github.com/Nency-Ravaliya/devsecops-python/blob/main/GRADING.md)
 and [submission requirements](https://github.com/Nency-Ravaliya/devsecops-python/blob/main/SUBMISSION.md)
